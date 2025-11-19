@@ -31,7 +31,7 @@
       :root {
         --primary: #3D7C77;
         --primary-light: #9ED8D2;
-        --card-light: #FFFFFF; /* Changed to white */
+        --card-light: #FFFFFF;
         --background-light: #E8F4F3;
         --secondary: #2C3E50;
         --light: #F8F9FA;
@@ -58,11 +58,11 @@
         margin-bottom: 20px;
         border-radius: 12px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        background-color: var(--card-light); /* White background */
+        background-color: var(--card-light);
         color: var(--text-dark);
         border: none;
         transition: all 0.3s ease;
-        border-left: 4px solid var(--primary); /* Added accent border */
+        border-left: 4px solid var(--primary);
       }
       
       .card:hover {
@@ -71,7 +71,7 @@
       }
       
       .card-header {
-        background: linear-gradient(135deg, var(--primary) 0%, #2C5C58 100%); /* Gradient header */
+        background: linear-gradient(135deg, var(--primary) 0%, #2C5C58 100%);
         color: white;
         border-radius: 12px 12px 0 0 !important;
         border: none;
@@ -81,7 +81,7 @@
       }
       
       .card-body {
-        background-color: var(--card-light); /* White background */
+        background-color: var(--card-light);
         padding: 20px;
         text-align: center;
         display: flex;
@@ -102,7 +102,7 @@
       }
       
       .icon-wrapper {
-        background: linear-gradient(135deg, var(--primary-light), var(--primary)); /* Gradient icon background */
+        background: linear-gradient(135deg, var(--primary-light), var(--primary));
         width: 90px;
         height: 90px;
         border-radius: 50%;
@@ -145,7 +145,7 @@
       .nav li a {
         display: inline-block;
         color: white;
-        background: linear-gradient(135deg, var(--primary) 0%, #2C5C58 100%); /* Gradient button */
+        background: linear-gradient(135deg, var(--primary) 0%, #2C5C58 100%);
         padding: 12px 24px;
         text-decoration: none;
         border-radius: 8px;
@@ -158,7 +158,7 @@
       }
 
       .nav li a:hover {
-        background: linear-gradient(135deg, #2C5C58 0%, #25544f 100%); /* Darker gradient on hover */
+        background: linear-gradient(135deg, #2C5C58 0%, #25544f 100%);
         transform: translateY(-2px);
         box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         border-color: rgba(255,255,255,0.5);
@@ -384,7 +384,6 @@
             padding: 0.5rem 1.5rem;
             border-radius: 15px;
             background: rgba(255, 255, 255, 0.1);
-            /* ALL BLUR EFFECTS COMPLETELY REMOVED */
             border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
@@ -396,7 +395,6 @@
             padding: 15px 0;
             margin-top: 10px;
             border: 2px solid rgba(255, 255, 255, 0.1);
-            /* BLUR REMOVED FROM DROPDOWN TOO */
         }
 
         .dropdown-item {
@@ -616,10 +614,10 @@
                   </a>
                   <ul class="dropdown-menu">
                     <li>
-                      <a href="/create-registration"><i class="fas fa-plus-circle me-2"></i>Add Residents</a>
+                      <a href="{{ route('incharge.registration.create') }}"><i class="fas fa-plus-circle me-2"></i>Add Residents</a>
                     </li>
                     <li>
-                      <a href="/pending-registration"><i class="fas fa-clock me-2"></i>Pending Registration</a>
+                      <a href="{{ route('incharge.registration.list') }}"><i class="fas fa-clock me-2"></i>Pending Registration</a>
                     </li>
                   </ul>
                 </li>
@@ -645,10 +643,10 @@
                   </a>
                   <ul class="dropdown-menu">
                     <li>
-                      <a href="#"><i class="fas fa-file-export me-2"></i>Discharge Residents</a>
+                      <a href="{{ route('incharge.create.discharge') }}"><i class="fas fa-file-export me-2"></i>Discharge Residents</a>
                     </li>
                     <li>
-                      <a href="#"><i class="fas fa-clock me-2"></i>Pending Discharge</a>
+                      <a href="{{ route('incharge.pending.discharge') }}"><i class="fas fa-clock me-2"></i>Pending Discharge</a>
                     </li>
                   </ul>
                 </li>

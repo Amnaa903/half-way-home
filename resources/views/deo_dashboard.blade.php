@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -33,17 +32,17 @@
         margin-bottom: 20px;
         border-radius: 10px;
         box-shadow: 3px 3px 6px;
-        background-color: #C7EAE7 !important; /* Light color for card background */
+        background-color: #C7EAE7 !important;
       }
       .cardimages {
         margin-top: 20px;
         height: 80px;
         width: 80px;
-        margin-bottom: 8px; /* Small space below image */
+        margin-bottom: 8px;
       }
       .card-body {
-        padding: 5px 15px 15px; /* Slightly reduced top padding */
-        background-color: #C7EAE7 !important; /* Light color for card body */
+        padding: 5px 15px 15px;
+        background-color: #C7EAE7 !important;
       }
       .colstyle {
         text-align: center;
@@ -72,7 +71,7 @@
         }
       }
       .nav {
-        margin-top: 5px; /* Small space above nav */
+        margin-top: 5px;
         display: block;
         text-align: center;
         font-family: 'Segoe UI';
@@ -136,7 +135,7 @@
       }
     </style>
   </head>
-  <body style="background-color: #C7EAE7 !important;"> <!-- Light color for cards background -->
+  <body style="background-color: #C7EAE7 !important;">
     <nav class="navbar" style="background-color: #3D7C77">
       <a href="/"><button class="button submit">BACK</button></a>
       <span
@@ -144,25 +143,26 @@
         class="navbar-brand h4 ml-auto"
       >Half Way Home</span>
       <ul class="navbar-nav ml-auto">
-                  <li class="nav-item dropdown">
-            <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button"
-               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-              DEO
+        <li class="nav-item dropdown">
+          <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button"
+             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+            DEO
+          </a>
+          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+            <a class="dropdown-item" href="http://127.0.0.1:8001/logout"
+               onclick="event.preventDefault();
+                         document.getElementById('logout-form').submit();">
+              Logout
             </a>
-            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-              <a class="dropdown-item" href="http://127.0.0.1:8001/logout"
-                 onclick="event.preventDefault();
-                           document.getElementById('logout-form').submit();">
-                Logout
-              </a>
-              <form id="logout-form" action="http://127.0.0.1:8001/logout" method="POST" class="d-none">
-                <input type="hidden" name="_token" value="a3d4xaLb4YIy7xMLXqOgwc73oWDk56l2MmkaP0by">              </form>
-            </div>
-          </li>
-              </ul>
+            <form id="logout-form" action="http://127.0.0.1:8001/logout" method="POST" class="d-none">
+              <input type="hidden" name="_token" value="a3d4xaLb4YIy7xMLXqOgwc73oWDk56l2MmkaP0by">
+            </form>
+          </div>
+        </li>
+      </ul>
     </nav>
-    <div class="container-fluid" style="background-color: #C7EAE7 !important;"> <!-- Light color for cards background -->
-      <div class="row" style="background-color: #C7EAE7 !important;"> <!-- Light color for cards background -->
+    <div class="container-fluid" style="background-color: #C7EAE7 !important;">
+      <div class="row" style="background-color: #C7EAE7 !important;">
         <div class="col-sm-12 col-md-3">
           <div class="card mx-auto">
             <img
@@ -176,10 +176,11 @@
                   <a href="#" class="dropdown-toggle" data-toggle="dropdown">Registration <span class="caret"></span></a>
                   <ul class="dropdown-menu">
                     <li>
-                      <a href="http://127.0.0.1:8001/admissions.registerlist">Pending Registration</a>
+                      <!-- CORRECT ROUTE LINK -->
+                      <a href="{{ route('deo.pending.registration') }}">Pending Registration</a>
                     </li>
                     <li>
-                      <a href="http://127.0.0.1:8001/editlist">Again Registration</a>
+                      <a href="#">Again Registration</a>
                     </li>
                   </ul>
                 </li>
@@ -202,10 +203,10 @@
                   </a>
                   <ul class="dropdown-menu">
                     <li>
-                      <a href="http://127.0.0.1:8001/indexmed">Medical Form</a>
+                      <a href="#">Medical Form</a>
                     </li>
                     <li>
-                      <a href="http://127.0.0.1:8001/miindex">Medical List</a>
+                      <a href="#">Medical List</a>
                     </li>
                   </ul>
                 </li>
@@ -228,10 +229,10 @@
                   </a>
                   <ul class="dropdown-menu">
                     <li>
-                      <a href="http://127.0.0.1:8001/pending-discharge/list">Pending Discharge List</a>
+                      <a href="#">Pending Discharge List</a>
                     </li>
                     <li>
-                      <a href="http://127.0.0.1:8001/diindex">Discharged Residents</a>
+                      <a href="#">Discharged Residents</a>
                     </li>
                   </ul>
                 </li>
@@ -254,10 +255,10 @@
                   </a>
                   <ul class="dropdown-menu">
                     <li>
-                      <a href="http://127.0.0.1:8001/ohindex">Current Residents</a>
+                      <a href="#">Current Residents</a>
                     </li>
                     <li>
-                      <a href="http://127.0.0.1:8001/allindex">Registered Residents</a>
+                      <a href="#">Registered Residents</a>
                     </li>
                   </ul>
                 </li>
@@ -266,7 +267,7 @@
           </div>
         </div>
       </div>
-      <div class="row" style="background-color: #C7EAE7 !important;"> <!-- Light color for cards background -->
+      <div class="row" style="background-color: #C7EAE7 !important;">
         <div class="col-sm-12 col-md-3">
           <div class="card mx-auto">
             <img
@@ -282,7 +283,7 @@
                   </a>
                   <ul class="dropdown-menu">
                     <li>
-                      <a href="/monthlyReport">Monthly Reports</a>
+                      <a href="#">Monthly Reports</a>
                     </li>
                   </ul>
                 </li>

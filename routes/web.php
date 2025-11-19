@@ -40,26 +40,50 @@ Route::middleware(['auth'])->group(function () {
     })->name('detailReports');
     
     // ==================== INCHARGE ROUTES ====================
-    Route::prefix('incharge')->group(function () {
+    Route::prefix('incharge')->name('incharge.')->group(function () {
         // Incharge Dashboard
-        Route::get('/dashboard', [InchargeController::class, 'dashboard'])->name('incharge.dashboard');
+        Route::get('/dashboard', [InchargeController::class, 'dashboard'])->name('dashboard');
+        
+        // ==================== REGISTRATION SYSTEM ROUTES ====================
+        Route::prefix('registration')->name('registration.')->group(function () {
+            // Create registration form
+            Route::get('/create', [InchargeController::class, 'createRegistration'])->name('create');
+            // Store registration data
+            Route::post('/store', [InchargeController::class, 'storeRegistration'])->name('store');
+            // View registration list
+            Route::get('/list', [InchargeController::class, 'registrationList'])->name('list');
+            // Delete registration entry
+            Route::delete('/{id}', [InchargeController::class, 'destroyRegistration'])->name('destroy');
+            // Bulk delete registrations
+            Route::post('/bulk-delete', [InchargeController::class, 'bulkDeleteRegistration'])->name('bulk-delete');
+            // Export registrations
+            Route::get('/export', [InchargeController::class, 'exportRegistrations'])->name('export');
+        });
+        
+        // CNIC Check Route
+        Route::post('/check-cnic', [InchargeController::class, 'checkRcnic'])->name('check.cnic');
+        
+        // Register Again Route
+        Route::post('/register-again', [InchargeController::class, 'registerAgain'])->name('register.again');
         
         // Resident Management Routes
-        Route::get('/residents/list', [InchargeController::class, 'listResidents'])->name('incharge.list');
-        Route::get('/residents/pending', [InchargeController::class, 'pendingRegistration'])->name('incharge.outputlist');
+        Route::get('/residents/list', [InchargeController::class, 'listResidents'])->name('residents.list');
+        Route::get('/residents/pending', [InchargeController::class, 'pendingRegistration'])->name('pending.registration');
         
         // Discharge Management Routes  
-        Route::get('/discharge/create', [InchargeController::class, 'createDischarge'])->name('incharge.pending_discharge.create');
-        Route::get('/discharge/pending', [InchargeController::class, 'pendingDischarge'])->name('incharge.discharge');
+        Route::get('/discharge/create', [InchargeController::class, 'createDischarge'])->name('create.discharge');
+        Route::get('/discharge/pending', [InchargeController::class, 'pendingDischarge'])->name('pending.discharge');
+    });
+    
+    // ==================== DEO ROUTES ====================
+    Route::prefix('deo')->name('deo.')->group(function () {
+        Route::get('/dashboard', [DeoController::class, 'dashboard'])->name('dashboard');
+        // DEO Pending Registration Route - ADDED
+        Route::get('/pending-registration', [InchargeController::class, 'deoPendingRegistration'])->name('pending.registration');
     });
     
     // ==================== ADMIN ROUTES ====================
     Route::prefix('admin')->group(function () {
         Route::get('/dashboard', [HomeController::class, 'index'])->name('admin.dashboard');
-    });
-    
-    // ==================== DEO ROUTES ====================
-    Route::prefix('deo')->group(function () {
-        Route::get('/dashboard', [DeoController::class, 'dashboard'])->name('deo.dashboard');
     });
 });

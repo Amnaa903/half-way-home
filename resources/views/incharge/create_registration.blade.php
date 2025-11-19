@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Registration List</title>
 
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Custom Styles -->
+    
     <style>
         body {
             background-color: #E8F4F3;
@@ -107,6 +107,8 @@
             border-radius: 8px;
             overflow: hidden;
             border: 1px solid #C7EAE7;
+            max-height: 500px;
+            overflow-y: auto;
         }
         
         table {
@@ -121,6 +123,8 @@
             text-align: center;
             font-weight: 600;
             font-size: 14px;
+            position: sticky;
+            top: 0;
         }
         
         table td {
@@ -171,6 +175,21 @@
             accent-color: #3D7C77;
         }
         
+        .alert {
+            background: #C7EAE7;
+            color: #2C3E50;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #9ED8D2;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 10px;
@@ -218,10 +237,22 @@
     <div class="form-card">
         <div class="form-header">
             <h1 class="form-title">Create Registration List</h1>
-            <p class="form-subtitle">Add participants to the registration list</p>
+            <p class="form-subtitle">Add new participants to the registration list</p>
         </div>
         
-        <form id="regForm" method="POST" action="/admissions.registerlist" enctype="multipart/form-data">
+        @if (session('error'))
+        <div class="alert">
+            <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
+        </div>
+        @endif
+        
+        @if (session('success'))
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i> {{ session('success') }}
+        </div>
+        @endif
+        
+        <form id="regForm" method="POST" action="{{ route('incharge.registration.store') }}">
             @csrf
             
             <div class="button-container">
@@ -245,12 +276,13 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <!-- Only New Entry Rows - No existing data -->
                         <tr>
                             <td><input type="checkbox" name="chk" class="checkbox"></td>
                             <td>1</td>
-                            <td><input type="text" name="rname[]" class="input-field name-field" placeholder="Full name"></td>
-                            <td><input type="date" name="reg_date[]" class="input-field date-field"></td>
-                            <td><input type="text" name="rcnic[]" class="input-field cnic-field" placeholder="CNIC"></td>
+                            <td><input type="text" name="rname[]" class="input-field name-field" placeholder="Full name" required></td>
+                            <td><input type="date" name="reg_date[]" class="input-field date-field" required></td>
+                            <td><input type="text" name="rcnic[]" class="input-field cnic-field" placeholder="CNIC" required></td>
                         </tr>
                     </tbody>
                 </table>
@@ -260,18 +292,80 @@
                 <i class="fas fa-save"></i> Add to Registration List
             </button>
         </form>
+        
+        <div class="text-center mt-3">
+            <a href="{{ route('incharge.registration.list') }}" class="btn btn-light">
+                <i class="fas fa-list"></i> View Registration List
+            </a>
+            <a href="{{ route('incharge.dashboard') }}" class="btn btn-light">
+                <i class="fas fa-home"></i> Back to Dashboard
+            </a>
+        </div>
     </div>
 </div>
 
+<!-- JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script>
+    $(document).ready(function() {
+        // Auto-hide alerts after 5 seconds
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 5000);
+
+        // Form validation
+        $('form#regForm').on('submit', function(e) {
+            let isValid = true;
+            let emptyFields = [];
+            
+            // Check all new name fields
+            $('input[name="rname[]"]').each(function(index) {
+                if (!$(this).val().trim()) {
+                    emptyFields.push('Name in row ' + (index + 1));
+                    isValid = false;
+                }
+            });
+            
+            // Check all new date fields
+            $('input[name="reg_date[]"]').each(function(index) {
+                if (!$(this).val()) {
+                    emptyFields.push('Date in row ' + (index + 1));
+                    isValid = false;
+                }
+            });
+            
+            // Check all new CNIC fields
+            $('input[name="rcnic[]"]').each(function(index) {
+                if (!$(this).val().trim()) {
+                    emptyFields.push('CNIC in row ' + (index + 1));
+                    isValid = false;
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert('Please fill all required fields:\n' + emptyFields.join('\n'));
+                return false;
+            }
+            
+            // If all valid, show loading
+            $('.btn-submit').html('<i class="fas fa-spinner fa-spin"></i> Saving...').prop('disabled', true);
+        });
+    });
+
     function addRow(tableID) {
         var table = document.getElementById(tableID);
         var rowCount = table.rows.length;
+        
         if (rowCount >= 21) {
             alert("There can be no more than 20 participants per session.");
             return;
         }
+        
         var row = table.insertRow(rowCount);
+        var rowNumber = rowCount;
 
         var cell1 = row.insertCell(0);
         var element1 = document.createElement("input");
@@ -281,7 +375,7 @@
         cell1.appendChild(element1);
 
         var cell2 = row.insertCell(1);
-        cell2.innerHTML = rowCount;
+        cell2.innerHTML = rowNumber;
 
         var cell3 = row.insertCell(2);
         var element2 = document.createElement("input");
@@ -289,6 +383,7 @@
         element2.name = "rname[]";
         element2.className = "input-field name-field";
         element2.placeholder = "Full name";
+        element2.required = true;
         cell3.appendChild(element2);
 
         var cell4 = row.insertCell(3);
@@ -296,6 +391,7 @@
         element3.type = "date";
         element3.name = "reg_date[]";
         element3.className = "input-field date-field";
+        element3.required = true;
         cell4.appendChild(element3);
 
         var cell5 = row.insertCell(4);
@@ -304,26 +400,60 @@
         element4.name = "rcnic[]";
         element4.className = "input-field cnic-field";
         element4.placeholder = "CNIC";
+        element4.required = true;
         cell5.appendChild(element4);
+        
+        // Add animation to new row
+        $(row).hide().fadeIn(500);
+        
+        // Update row numbers
+        updateRowNumbers(tableID);
     }
 
     function deleteRow(tableID) {
-        try {
-            var table = document.getElementById(tableID);
-            var rowCount = table.rows.length;
-            for (var i = 0; i < rowCount; i++) {
-                var row = table.rows[i];
-                var chkbox = row.cells[0].childNodes[0];
-                if (chkbox && chkbox.checked) {
-                    table.deleteRow(i);
-                    rowCount--;
-                    i--;
-                }
+        var table = document.getElementById(tableID);
+        var rowCount = table.rows.length;
+        var deleted = false;
+        
+        if (rowCount <= 2) { // Header + 1 row minimum
+            alert("At least one row must remain.");
+            return;
+        }
+        
+        for (var i = 1; i < rowCount; i++) {
+            var row = table.rows[i];
+            var chkbox = row.cells[0].childNodes[0];
+            if (chkbox && chkbox.checked) {
+                // Add fade out animation
+                $(row).fadeOut(300, function() {
+                    this.remove();
+                    // Update row numbers
+                    updateRowNumbers(tableID);
+                });
+                deleted = true;
+                break; // Delete one row at a time
             }
-        } catch (e) {
-            alert(e);
+        }
+        
+        if (!deleted) {
+            alert("Please select at least one row to delete.");
         }
     }
+    
+    function updateRowNumbers(tableID) {
+        var table = document.getElementById(tableID);
+        for (var i = 1; i < table.rows.length; i++) {
+            table.rows[i].cells[1].innerHTML = i;
+        }
+    }
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === '+') {
+            e.preventDefault();
+            addRow('dataTable');
+        }
+    });
 </script>
 
 </body>
