@@ -35,7 +35,8 @@ class InchargeController extends Controller
                             ->count()
         ];
         
-        return view('incharge.dashboard', compact('stats'));
+        // CHANGE: Updated to match your file name
+        return view('incharge_dashboard', compact('stats'));
     }
 
     // ==================== REGISTRATION SYSTEM METHODS ====================
