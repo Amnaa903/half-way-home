@@ -268,7 +268,17 @@
                             </td>
                             <td>
                                 <!-- Register Button - Link to Admission Form -->
-                                <a href="{{ url('/hwhadmissions/create?incharge_id=' . $incharge->id . '&name=' . urlencode($incharge->rname) . '&cnic=' . $incharge->rcnic) }}" 
+                                <!-- UPDATED: Using named route instead of direct URL -->
+                                <a href="{{ route('hwhadmissions.create', [
+                                    'incharge_id' => $incharge->id, 
+                                    'name' => $incharge->rname, 
+                                    'cnic' => $incharge->rcnic,
+                                    'father_name' => $incharge->father_name ?? '',
+                                    'phone' => $incharge->phone ?? '',
+                                    'address' => $incharge->address ?? '',
+                                    'guardian_name' => $incharge->guardian_name ?? '',
+                                    'guardian_contact' => $incharge->guardian_contact ?? ''
+                                ]) }}" 
                                    class="btn btn-register">
                                     <i class="fas fa-user-plus"></i> Register
                                 </a>
@@ -311,6 +321,12 @@
             <a href="{{ route('deo.dashboard') }}" class="btn btn-light me-2">
                 <i class="fas fa-home"></i> DEO Dashboard
             </a>
+            
+            <!-- NEW: Direct link to HWH Admissions List -->
+            <a href="{{ route('hwhadmissions.index') }}" class="btn btn-light me-2">
+                <i class="fas fa-list"></i> View All Admissions
+            </a>
+            
             <button onclick="window.location.reload()" class="btn btn-light">
                 <i class="fas fa-sync-alt"></i> Refresh
             </button>
@@ -344,6 +360,25 @@
                 }
             }
         });
+
+        // NEW: Success message for auto-removal
+        @if(session('auto_removed'))
+        setTimeout(function() {
+            // Show a toast notification for auto-removal
+            const toast = document.createElement('div');
+            toast.className = 'alert alert-success';
+            toast.style.position = 'fixed';
+            toast.style.top = '20px';
+            toast.style.right = '20px';
+            toast.style.zIndex = '9999';
+            toast.innerHTML = '<i class="fas fa-check-circle"></i> {{ session('auto_removed') }}';
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+        }, 1000);
+        @endif
     });
 
     // Keyboard shortcut for refresh
@@ -351,6 +386,26 @@
         if (e.ctrlKey && e.key === 'r') {
             e.preventDefault();
             window.location.reload();
+        }
+    });
+
+    // NEW: Enhanced user experience
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add loading state to register buttons
+        const registerButtons = document.querySelectorAll('.btn-register');
+        registerButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                this.disabled = true;
+            });
+        });
+
+        // Show notification when form opens in new tab
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('form_opened')) {
+            setTimeout(() => {
+                alert('Admission form opened in new tab. You can continue working here.');
+            }, 1000);
         }
     });
 </script>
