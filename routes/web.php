@@ -84,6 +84,22 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/export', [InchargeController::class, 'exportRegistrations'])->name('export');
         });
         
+        // ==================== DISCHARGE SYSTEM ROUTES ====================
+        Route::prefix('discharge')->name('discharge.')->group(function () {
+            // Create discharge form
+            Route::get('/create', [InchargeController::class, 'createDischarge'])->name('create');
+            // Store discharge data  
+            Route::post('/store', [InchargeController::class, 'storeDischarge'])->name('store');
+            // View pending discharge list
+            Route::get('/pending', [InchargeController::class, 'pendingDischargeList'])->name('pending');
+            // Delete discharge entry
+            Route::delete('/{id}', [InchargeController::class, 'destroyDischarge'])->name('destroy');
+            // Bulk delete discharges - ADDED
+            Route::post('/bulk-delete', [InchargeController::class, 'bulkDeleteDischarge'])->name('bulk-delete');
+            // Export discharges - ADDED
+            Route::get('/export', [InchargeController::class, 'exportDischarges'])->name('export');
+        });
+        
         // CNIC Check Route
         Route::post('/check-cnic', [InchargeController::class, 'checkRcnic'])->name('check.cnic');
         
@@ -93,19 +109,26 @@ Route::middleware(['auth'])->group(function () {
         // Resident Management Routes
         Route::get('/residents/list', [InchargeController::class, 'listResidents'])->name('residents.list');
         Route::get('/residents/pending', [InchargeController::class, 'pendingRegistration'])->name('pending.registration');
-        
-        // Discharge Management Routes  
-        Route::get('/discharge/create', [InchargeController::class, 'createDischarge'])->name('create.discharge');
-        Route::get('/discharge/pending', [InchargeController::class, 'pendingDischarge'])->name('pending.discharge');
     });
     
     // ==================== DEO ROUTES ====================
     Route::prefix('deo')->name('deo.')->group(function () {
         Route::get('/dashboard', [DeoController::class, 'dashboard'])->name('dashboard');
-        // DEO Pending Registration Route - ADDED
+        
+        // DEO Pending Registration Route
         Route::get('/pending-registration', [InchargeController::class, 'deoPendingRegistration'])->name('pending.registration');
         
-        // NEW: DEO HWH Admissions Management
+        // ==================== DEO DISCHARGE ROUTES ====================
+        Route::prefix('discharge')->name('discharge.')->group(function () {
+            // DEO Pending Discharge List
+            Route::get('/pending', [InchargeController::class, 'deoPendingDischarge'])->name('pending');
+            // Delete discharge entry
+            Route::delete('/{id}', [InchargeController::class, 'destroyDischarge'])->name('destroy');
+            // Bulk delete discharges - ADDED
+            Route::post('/bulk-delete', [InchargeController::class, 'bulkDeleteDischarge'])->name('bulk-delete');
+        });
+        
+        // DEO HWH Admissions Management
         Route::get('/hwh-admissions', [HWHAdmissionController::class, 'index'])->name('hwh.admissions');
         Route::get('/hwh-admissions/{id}', [HWHAdmissionController::class, 'show'])->name('hwh.admissions.show');
     });
@@ -114,13 +137,16 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
         
-        // NEW: Admin HWH Admissions Management
+        // Admin HWH Admissions Management
         Route::get('/hwh-admissions', [HWHAdmissionController::class, 'index'])->name('hwh.admissions');
         Route::get('/hwh-admissions/{id}', [HWHAdmissionController::class, 'show'])->name('hwh.admissions.show');
         Route::delete('/hwh-admissions/{id}', [HWHAdmissionController::class, 'destroy'])->name('hwh.admissions.destroy');
         
-        // Temporary Admissions Management (if needed)
-        Route::get('/temp-admissions', [HWHAdmissionController::class, 'indexTemporary'])->name('temp.admissions');
+        // Admin Discharge Management
+        Route::get('/discharge/pending', [InchargeController::class, 'deoPendingDischarge'])->name('discharge.pending');
+        Route::delete('/discharge/{id}', [InchargeController::class, 'destroyDischarge'])->name('discharge.destroy');
+        // Admin bulk delete discharges - ADDED
+        Route::post('/discharge/bulk-delete', [InchargeController::class, 'bulkDeleteDischarge'])->name('discharge.bulk-delete');
     });
 });
 

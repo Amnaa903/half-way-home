@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DPMIS</title>
+    <title>DEO Dashboard - Half Way Home</title>
     <link
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
@@ -149,13 +149,13 @@
             DEO
           </a>
           <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-            <a class="dropdown-item" href="http://127.0.0.1:8001/logout"
+            <a class="dropdown-item" href="{{ route('logout') }}"
                onclick="event.preventDefault();
                          document.getElementById('logout-form').submit();">
               Logout
             </a>
-            <form id="logout-form" action="http://127.0.0.1:8001/logout" method="POST" class="d-none">
-              <input type="hidden" name="_token" value="a3d4xaLb4YIy7xMLXqOgwc73oWDk56l2MmkaP0by">
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+              @csrf
             </form>
           </div>
         </li>
@@ -166,7 +166,7 @@
         <div class="col-sm-12 col-md-3">
           <div class="card mx-auto">
             <img
-              src="images/rf.png"
+              src="{{ asset('images/rf.png') }}"
               class="card-img-top cardimages mx-auto logo3"
               alt="..."
             />
@@ -191,7 +191,7 @@
         <div class="col-sm-12 col-md-3">
           <div class="card mx-auto">
             <img
-              src="images/mr.png"
+              src="{{ asset('images/mr.png') }}"
               class="card-img-top cardimages mx-auto"
               alt="..."
             />
@@ -217,7 +217,7 @@
         <div class="col-sm-12 col-md-3">
           <div class="card ar mx-auto">
             <img
-              src="images/discharge.png"
+              src="{{ asset('images/discharge.png') }}"
               class="card-img-top cardimages mx-auto"
               alt="..."
             />
@@ -229,7 +229,8 @@
                   </a>
                   <ul class="dropdown-menu">
                     <li>
-                      <a href="#">Pending Discharge List</a>
+                      <!-- FIXED ROUTE - Pending Discharge List -->
+                      <a href="{{ route('deo.discharge.pending') }}">Pending Discharge List</a>
                     </li>
                     <li>
                       <a href="#">Discharged Residents</a>
@@ -243,7 +244,7 @@
         <div class="col-sm-12 col-md-3">
           <div class="card mx-auto">
             <img
-              src="images/lor.png"
+              src="{{ asset('images/lor.png') }}"
               class="card-img-top cardimages mx-auto"
               alt="..."
             />
@@ -271,7 +272,7 @@
         <div class="col-sm-12 col-md-3">
           <div class="card mx-auto">
             <img
-              src="images/report.png"
+              src="{{ asset('images/report.png') }}"
               class="card-img-top cardimages mx-auto"
               alt="..."
             />
@@ -300,9 +301,9 @@
         <div
           class="col-sm-12 col-md-4"
           style="text-align: center; margin-top: 5px">
-          <img style="width: 50px" src="images/PITBLOGO.png" />
+          <img style="width: 50px" src="{{ asset('images/PITBLOGO.png') }}" />
           <small><b>A Project of Government of Punjab</b></small>
-          <img style="width: 60px" src="images/swd.png" />
+          <img style="width: 60px" src="{{ asset('images/swd.png') }}" />
         </div>
         <div
           class="col-sm-0 col-md-4"

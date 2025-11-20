@@ -324,10 +324,12 @@
                   </a>
                   <ul class="dropdown-menu">
                     <li>
-                      <a href="{{ route('incharge.create.discharge') }}"><i class="fas fa-file-export me-2"></i>Discharge Residents</a>
+                      <!-- CORRECTED ROUTE -->
+                      <a href="{{ route('incharge.discharge.create') }}"><i class="fas fa-file-export me-2"></i>Discharge Residents</a>
                     </li>
                     <li>
-                      <a href="{{ route('incharge.pending.discharge') }}"><i class="fas fa-clock me-2"></i>Pending Discharge</a>
+                      <!-- CORRECTED ROUTE -->
+                      <a href="{{ route('incharge.discharge.pending') }}"><i class="fas fa-clock me-2"></i>Pending Discharge</a>
                     </li>
                   </ul>
                 </li>
