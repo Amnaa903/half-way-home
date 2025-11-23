@@ -17,7 +17,6 @@
     <!-- jQuery for validation -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        /* Your existing CSS remains exactly the same except for text positioning */
         :root {
             --primary-color: #264653;
             --secondary-color: #2A9D8F;
@@ -106,7 +105,6 @@
             transform: scale(1.02);
         }
 
-        /* UPDATED: English text on left, Urdu on right */
         .registration-form .form-label {
             font-family: 'Playfair Display', serif;
             font-size: 1rem;
@@ -119,7 +117,6 @@
         }
 
         .registration-form .form-label span:first-child {
-            /* English text - left aligned */
             text-align: left;
             flex: 1;
         }
@@ -162,7 +159,6 @@
             transition: all 0.3s ease;
         }
 
-        /* UPDATED: Section titles with English left, Urdu right */
         .form-section-title {
             font-family: 'Playfair Display', serif;
             font-size: 1.6rem;
@@ -176,7 +172,6 @@
         }
 
         .form-section-title span:first-child {
-            /* English text - left aligned */
             text-align: left;
             flex: 1;
         }
@@ -201,7 +196,6 @@
             left: 0;
         }
 
-        /* UPDATED: Step labels with English left, Urdu right */
         .step-progress {
             display: flex;
             justify-content: space-between;
@@ -256,7 +250,6 @@
         }
 
         .step .step-label span:first-child {
-            /* English text - left aligned */
             text-align: center;
         }
 
@@ -459,7 +452,6 @@
             background: rgba(255, 255, 255, 0.7);
         }
         
-        /* Loading overlay */
         .loading-overlay {
             display: none;
             position: fixed;
@@ -499,7 +491,6 @@
             margin-top: 5px;
         }
 
-        /* Real-time validation styles */
         .form-control.is-valid {
             border-color: var(--success-color);
         }
@@ -508,7 +499,6 @@
             border-color: var(--error-color);
         }
 
-        /* Urdu text specific styles */
         .urdu-text {
             font-family: 'Noto Nastaliq Urdu', serif !important;
             direction: rtl;
@@ -516,14 +506,12 @@
             text-align: right;
         }
         
-        /* Jameel Noori Nastaleeq specific styles */
         .jameel-noori {
             font-family: 'Noto Nastaliq Urdu', serif;
             font-weight: 500;
             line-height: 1.6;
         }
         
-        /* Enhanced Urdu text styling */
         .urdu-label, .urdu-title, .urdu-text {
             font-family: 'Noto Nastaliq Urdu', serif !important;
             font-weight: 500;
@@ -533,7 +521,6 @@
             line-height: 1.6;
         }
         
-        /* Ensure proper rendering for Urdu text */
         .urdu-content {
             font-family: 'Noto Nastaliq Urdu', serif;
             font-size: 1.1rem;
@@ -543,7 +530,6 @@
             line-height: 1.8;
         }
         
-        /* Custom validation message styling */
         .field-error {
             color: var(--error-color);
             font-size: 0.8rem;
@@ -558,7 +544,6 @@
             display: none;
         }
 
-        /* CNIC Search Loading */
         .cnic-search-loading {
             position: absolute;
             right: 10px;
@@ -571,7 +556,6 @@
             position: relative;
         }
         
-        /* Enhanced validation styles */
         .validation-message {
             font-size: 0.8rem;
             margin-top: 5px;
@@ -596,7 +580,6 @@
             border-color: var(--success-color) !important;
         }
         
-        /* Validation message styling */
         .validation-msg {
             font-size: 0.8rem;
             margin-top: 5px;
@@ -613,7 +596,6 @@
             display: block;
         }
 
-        /* Attachment preview styles */
         .existing-attachment {
             background: #e8f5e8;
             border: 1px solid #27AE60;
@@ -638,25 +620,23 @@
             margin-top: 5px;
         }
 
-        /* File input styling */
-        .file-input-group {
-            margin-bottom: 1rem;
-        }
-
-        .file-requirements {
-            font-size: 0.8rem;
-            color: #666;
-            margin-top: 5px;
-        }
-
-        /* Error alert styling */
-        .error-alert {
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
+        .auto-fill-notification {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
             border-radius: 8px;
             padding: 15px;
             margin-bottom: 20px;
-            color: #721c24;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 0.8rem;
+            display: none;
         }
     </style>
 </head>
@@ -679,6 +659,18 @@
                 <div class="col-lg-10">
                     <div class="registration-container">
                         <div class="registration-card">
+                            <!-- Auto-fill Notification -->
+                            <div class="auto-fill-notification" id="autoFillNotification" style="display: none;">
+                                <h6><i class="fas fa-info-circle"></i> Form Auto-filled</h6>
+                                <p class="mb-0">This form has been automatically filled with data from the pending registration. Please review and complete the remaining fields.</p>
+                            </div>
+
+                            <!-- Debug Info -->
+                            <div class="debug-info" id="debugInfo">
+                                <strong>Debug Information:</strong>
+                                <div id="debugContent"></div>
+                            </div>
+
                             <!-- Step Progress Bar -->
                             <div class="step-progress active-1" role="progressbar" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1">
                                 <div class="step active">
@@ -716,16 +708,15 @@
                             </div>
                             @endif
 
-                            <!-- Error Alert -->
-                            <div class="error-alert" style="display: none;" id="errorAlert">
-                                <h6 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> Please fix the following errors:</h6>
-                                <ul class="mb-0" id="errorList"></ul>
+                            @if(session('error'))
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
                             </div>
+                            @endif
 
-                            <!-- Validation Errors -->
                             @if($errors->any())
-                            <div class="error-alert" id="serverErrorAlert">
-                                <h6 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> Please fix the following errors:</h6>
+                            <div class="alert alert-danger">
+                                <h6 class="alert-heading">Please fix the following errors:</h6>
                                 <ul class="mb-0">
                                     @foreach($errors->all() as $error)
                                         <li>{{ $error }}</li>
@@ -737,11 +728,11 @@
                             <form class="registration-form" id="medicalRegistrationForm" action="{{ route('hwhadmissions.store') }}" method="POST" enctype="multipart/form-data" novalidate>
                                 @csrf
                                 
-                                <!-- Hidden field for incharge_id if pre-filled -->
+                                <!-- Hidden field for incharge_id -->
                                 @if(isset($prefillData['incharge_id']))
                                 <input type="hidden" name="incharge_id" value="{{ $prefillData['incharge_id'] }}">
                                 @endif
-
+                                
                                 <!-- Step 1: Personal Information -->
                                 <div class="form-step active" id="step-1">
                                     <h3 class="form-section-title">
@@ -757,8 +748,7 @@
                                             </label>
                                             <input type="text" class="form-control @error('patient_name') is-invalid @enderror" 
                                                    id="patient_name" name="patient_name" 
-                                                   value="{{ old('patient_name', $prefillData['patient_name'] ?? '') }}" 
-                                                   required maxlength="255">
+                                                   value="{{ old('patient_name', $prefillData['patient_name'] ?? '') }}" required>
                                             <div class="validation-msg" id="patient_name_msg"></div>
                                             @error('patient_name')
                                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -772,8 +762,7 @@
                                             </label>
                                             <input type="text" class="form-control @error('father_name') is-invalid @enderror" 
                                                    id="father_name" name="father_name" 
-                                                   value="{{ old('father_name', $prefillData['father_name'] ?? '') }}" 
-                                                   required maxlength="255">
+                                                   value="{{ old('father_name', $prefillData['father_name'] ?? '') }}" required>
                                             <div class="validation-msg" id="father_name_msg"></div>
                                             @error('father_name')
                                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -787,15 +776,9 @@
                                                 <span>Age</span>
                                                 <span class="urdu-label jameel-noori">عمر</span>
                                             </label>
-                                            <select class="form-select @error('age') is-invalid @enderror" 
-                                                   id="age" name="age" required>
-                                                <option value="">Select Age</option>
-                                                @for ($i = 1; $i <= 120; $i++)
-                                                    <option value="{{ $i }}" {{ old('age') == $i ? 'selected' : '' }}>
-                                                        {{ $i }} years
-                                                    </option>
-                                                @endfor
-                                            </select>
+                                            <input type="number" class="form-control @error('age') is-invalid @enderror" 
+                                                   id="age" name="age" 
+                                                   value="{{ old('age') }}" min="1" max="120" required>
                                             <div class="validation-msg" id="age_msg"></div>
                                             @error('age')
                                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -827,7 +810,7 @@
                                             <input type="text" class="form-control @error('cnic') is-invalid @enderror" 
                                                    id="cnic" name="cnic" 
                                                    value="{{ old('cnic', $prefillData['cnic'] ?? '') }}" 
-                                                   placeholder="12345-1234567-1" required maxlength="15">
+                                                   placeholder="12345-1234567-1" required>
                                             <div class="cnic-search-loading" id="cnicSearchLoading">
                                                 <div class="spinner-border spinner-border-sm text-primary" role="status">
                                                     <span class="visually-hidden">Loading...</span>
@@ -849,8 +832,7 @@
                                             </label>
                                             <input type="tel" class="form-control @error('phone') is-invalid @enderror" 
                                                    id="phone" name="phone" 
-                                                   value="{{ old('phone', $prefillData['phone'] ?? '') }}" 
-                                                   required maxlength="15">
+                                                   value="{{ old('phone', $prefillData['phone'] ?? '') }}" required>
                                             <div class="validation-msg" id="phone_msg"></div>
                                             @error('phone')
                                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -927,69 +909,13 @@
                                             </label>
                                             <input type="text" class="form-control @error('spouse_name') is-invalid @enderror" 
                                                    id="spouse_name" name="spouse_name" 
-                                                   value="{{ old('spouse_name') }}" 
-                                                   placeholder="Enter spouse name" maxlength="255">
+                                                   value="{{ old('spouse_name') }}"
+                                                   placeholder="Enter spouse name">
                                             <div class="validation-msg" id="spouse_name_msg"></div>
                                             @error('spouse_name')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                         </div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-4 mb-3">
-                                            <label for="children_count" class="form-label">
-                                                <span>Number of Children</span>
-                                                <span class="urdu-label jameel-noori">بچوں کی تعداد</span>
-                                            </label>
-                                            <input type="number" class="form-control @error('children_count') is-invalid @enderror" 
-                                                   id="children_count" name="children_count" 
-                                                   value="{{ old('children_count', 0) }}" min="0" max="20"
-                                                   placeholder="Enter number of children">
-                                            <div class="validation-msg" id="children_count_msg"></div>
-                                            @error('children_count')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                        
-                                        <div class="col-md-4 mb-3" id="boys_count_field" style="display: none;">
-                                            <label for="boys_count" class="form-label">
-                                                <span>Number of Boys</span>
-                                                <span class="urdu-label jameel-noori">لڑکوں کی تعداد</span>
-                                            </label>
-                                            <input type="number" class="form-control @error('boys_count') is-invalid @enderror" 
-                                                   id="boys_count" name="boys_count" 
-                                                   value="{{ old('boys_count', 0) }}" min="0" max="20">
-                                            <div class="validation-msg" id="boys_count_msg"></div>
-                                            @error('boys_count')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                        
-                                        <div class="col-md-4 mb-3" id="girls_count_field" style="display: none;">
-                                            <label for="girls_count" class="form-label">
-                                                <span>Number of Girls</span>
-                                                <span class="urdu-label jameel-noori">لڑکیوں کی تعداد</span>
-                                            </label>
-                                            <input type="number" class="form-control @error('girls_count') is-invalid @enderror" 
-                                                   id="girls_count" name="girls_count" 
-                                                   value="{{ old('girls_count', 0) }}" min="0" max="20">
-                                            <div class="validation-msg" id="girls_count_msg"></div>
-                                            @error('girls_count')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-
-                                    <div class="row" id="children_sum_error_field" style="display: none;">
-                                        <div class="col-12 mb-3">
-                                            <div class="invalid-feedback">Number of boys and girls must equal the total number of children.</div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Dynamic Children Information -->
-                                    <div id="children_container">
-                                        <!-- Children fields will be dynamically inserted here -->
                                     </div>
 
                                     <div class="mb-3">
@@ -999,8 +925,7 @@
                                         </label>
                                         <input type="text" class="form-control @error('religion') is-invalid @enderror" 
                                                id="religion" name="religion" 
-                                               value="{{ old('religion') }}" 
-                                               placeholder="Enter religion" maxlength="255">
+                                               value="{{ old('religion') }}">
                                         <div class="validation-msg" id="religion_msg"></div>
                                         @error('religion')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -1020,8 +945,7 @@
                                             </label>
                                             <input type="text" class="form-control @error('guardian_name') is-invalid @enderror" 
                                                    id="guardian_name" name="guardian_name" 
-                                                   value="{{ old('guardian_name', $prefillData['guardian_name'] ?? '') }}" 
-                                                   required maxlength="255">
+                                                   value="{{ old('guardian_name', $prefillData['guardian_name'] ?? '') }}" required>
                                             <div class="validation-msg" id="guardian_name_msg"></div>
                                             @error('guardian_name')
                                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -1035,8 +959,7 @@
                                             </label>
                                             <input type="tel" class="form-control @error('guardian_contact') is-invalid @enderror" 
                                                    id="guardian_contact" name="guardian_contact" 
-                                                   value="{{ old('guardian_contact', $prefillData['guardian_contact'] ?? '') }}" 
-                                                   required maxlength="15">
+                                                   value="{{ old('guardian_contact', $prefillData['guardian_contact'] ?? '') }}" required>
                                             <div class="validation-msg" id="guardian_contact_msg"></div>
                                             @error('guardian_contact')
                                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -1052,8 +975,7 @@
                                             </label>
                                             <input type="text" class="form-control @error('relationship') is-invalid @enderror" 
                                                id="relationship" name="relationship" 
-                                               value="{{ old('relationship') }}" 
-                                               required maxlength="255">
+                                               value="{{ old('relationship') }}" required>
                                             <div class="validation-msg" id="relationship_msg"></div>
                                             @error('relationship')
                                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -1067,8 +989,7 @@
                                             </label>
                                             <input type="text" class="form-control @error('guardian_address') is-invalid @enderror" 
                                                    id="guardian_address" name="guardian_address" 
-                                                   value="{{ old('guardian_address') }}" 
-                                                   required maxlength="255">
+                                                   value="{{ old('guardian_address') }}" required>
                                             <div class="validation-msg" id="guardian_address_msg"></div>
                                             @error('guardian_address')
                                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -1111,8 +1032,7 @@
                                             </label>
                                             <input type="text" class="form-control @error('reason') is-invalid @enderror" 
                                                    id="reason" name="reason" 
-                                                   value="{{ old('reason') }}" 
-                                                   placeholder="Reason for admission" maxlength="255">
+                                                   value="{{ old('reason') }}">
                                             <div class="validation-msg" id="reason_msg"></div>
                                             @error('reason')
                                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -1127,8 +1047,7 @@
                                         </label>
                                         <input type="text" class="form-control @error('disease_name') is-invalid @enderror" 
                                                id="disease_name" name="disease_name" 
-                                               value="{{ old('disease_name') }}" 
-                                               required maxlength="255">
+                                               value="{{ old('disease_name') }}" required>
                                         <div class="validation-msg" id="disease_name_msg"></div>
                                         @error('disease_name')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -1141,8 +1060,7 @@
                                             <span class="urdu-label jameel-noori">علاج کی تفصیل</span>
                                         </label>
                                         <textarea class="form-control @error('treatment_details') is-invalid @enderror" 
-                                                  id="treatment_details" name="treatment_details" 
-                                                  rows="4" required>{{ old('treatment_details') }}</textarea>
+                                                  id="treatment_details" name="treatment_details" rows="4" required>{{ old('treatment_details') }}</textarea>
                                         <div class="validation-msg" id="treatment_details_msg"></div>
                                         @error('treatment_details')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -1155,8 +1073,7 @@
                                             <span class="urdu-label jameel-noori">کیس ہسٹری</span>
                                         </label>
                                         <textarea class="form-control @error('case_history') is-invalid @enderror" 
-                                                  id="case_history" name="case_history" 
-                                                  rows="4" required>{{ old('case_history') }}</textarea>
+                                                  id="case_history" name="case_history" rows="4" required>{{ old('case_history') }}</textarea>
                                         <div class="validation-msg" id="case_history_msg"></div>
                                         @error('case_history')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -1169,8 +1086,7 @@
                                             <span class="urdu-label jameel-noori">دیگر بیماریاں</span>
                                         </label>
                                         <textarea class="form-control @error('other_diseases') is-invalid @enderror" 
-                                                  id="other_diseases" name="other_diseases" 
-                                                  rows="3">{{ old('other_diseases') }}</textarea>
+                                                  id="other_diseases" name="other_diseases" rows="3">{{ old('other_diseases') }}</textarea>
                                         <div class="validation-msg" id="other_diseases_msg"></div>
                                         @error('other_diseases')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -1189,25 +1105,20 @@
                                         <span>Attachments</span>
                                         <span class="urdu-title jameel-noori">منسلکات</span>
                                     </h3>
-                                    
+
                                     <div class="alert alert-info">
-                                        <h6><i class="fas fa-info-circle"></i> File Requirements</h6>
-                                        <ul class="mb-0">
-                                            <li>All files must be in PDF, JPG, JPEG, or PNG format</li>
-                                            <li>Maximum file size: 5MB per file</li>
-                                            <li>Required files are marked with <span class="required"></span></li>
-                                        </ul>
+                                        <i class="fas fa-info-circle"></i> 
+                                        <strong>Note:</strong> All file attachments are optional for testing. You can submit the form without uploading any files.
                                     </div>
 
-                                    <div class="mb-3 file-input-group">
-                                        <label for="id_card_front" class="form-label required">
+                                    <div class="mb-3">
+                                        <label for="id_card_front" class="form-label">
                                             <span>Copy of ID Card (Front)</span>
                                             <span class="urdu-label jameel-noori">شناختی کارڈ کی کاپی (سامنے)</span>
                                         </label>
                                         <input type="file" class="form-control @error('id_card_front') is-invalid @enderror" 
-                                               id="id_card_front" name="id_card_front" 
-                                               accept=".pdf,.jpg,.jpeg,.png" required>
-                                        <div class="file-requirements">Accepted formats: PDF, JPG, JPEG, PNG | Max size: 5MB</div>
+                                               id="id_card_front" name="id_card_front" accept=".pdf,.jpg,.jpeg,.png">
+                                        <div class="form-text">Max file size: 5MB</div>
                                         <div class="validation-msg" id="id_card_front_msg"></div>
                                         @error('id_card_front')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -1215,15 +1126,14 @@
                                         <div class="file-preview" id="id_card_front_preview"></div>
                                     </div>
 
-                                    <div class="mb-3 file-input-group">
-                                        <label for="id_card_back" class="form-label required">
+                                    <div class="mb-3">
+                                        <label for="id_card_back" class="form-label">
                                             <span>Copy of ID Card (Back)</span>
                                             <span class="urdu-label jameel-noori">شناختی کارڈ کی کاپی (پیچھے)</span>
                                         </label>
                                         <input type="file" class="form-control @error('id_card_back') is-invalid @enderror" 
-                                               id="id_card_back" name="id_card_back" 
-                                               accept=".pdf,.jpg,.jpeg,.png" required>
-                                        <div class="file-requirements">Accepted formats: PDF, JPG, JPEG, PNG | Max size: 5MB</div>
+                                               id="id_card_back" name="id_card_back" accept=".pdf,.jpg,.jpeg,.png">
+                                        <div class="form-text">Max file size: 5MB</div>
                                         <div class="validation-msg" id="id_card_back_msg"></div>
                                         @error('id_card_back')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -1231,15 +1141,14 @@
                                         <div class="file-preview" id="id_card_back_preview"></div>
                                     </div>
 
-                                    <div class="mb-3 file-input-group">
-                                        <label for="passport_photos" class="form-label required">
+                                    <div class="mb-3">
+                                        <label for="passport_photos" class="form-label">
                                             <span>Passport-Sized Photographs</span>
                                             <span class="urdu-label jameel-noori">پاسپورٹ سائز تصاویر</span>
                                         </label>
                                         <input type="file" class="form-control @error('passport_photos') is-invalid @enderror" 
-                                               id="passport_photos" name="passport_photos[]" 
-                                               accept=".jpg,.jpeg,.png" multiple required>
-                                        <div class="file-requirements">Upload at least one recent photograph. Accepted formats: JPG, JPEG, PNG | Max size: 5MB per file</div>
+                                               id="passport_photos" name="passport_photos[]" accept=".jpg,.jpeg,.png" multiple>
+                                        <div class="form-text">Upload four recent photographs. Max file size: 5MB each</div>
                                         <div class="validation-msg" id="passport_photos_msg"></div>
                                         @error('passport_photos')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -1250,15 +1159,14 @@
                                         <div class="file-preview" id="passport_photos_preview"></div>
                                     </div>
 
-                                    <div class="mb-3 file-input-group">
-                                        <label for="medical_reports" class="form-label required">
+                                    <div class="mb-3">
+                                        <label for="medical_reports" class="form-label">
                                             <span>Medical Reports (including HIV Test)</span>
                                             <span class="urdu-label jameel-noori">طبی رپورٹس (بشمول ایچ آئی وی ٹیسٹ)</span>
                                         </label>
                                         <input type="file" class="form-control @error('medical_reports') is-invalid @enderror" 
-                                               id="medical_reports" name="medical_reports[]" 
-                                               accept=".pdf,.jpg,.jpeg,.png" multiple required>
-                                        <div class="file-requirements">Upload at least one medical report. Accepted formats: PDF, JPG, JPEG, PNG | Max size: 5MB per file</div>
+                                               id="medical_reports" name="medical_reports[]" accept=".pdf,.jpg,.jpeg,.png" multiple>
+                                        <div class="form-text">Max file size: 5MB each</div>
                                         <div class="validation-msg" id="medical_reports_msg"></div>
                                         @error('medical_reports')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -1269,15 +1177,14 @@
                                         <div class="file-preview" id="medical_reports_preview"></div>
                                     </div>
 
-                                    <div class="mb-3 file-input-group">
-                                        <label for="referral_form" class="form-label required">
+                                    <div class="mb-3">
+                                        <label for="referral_form" class="form-label">
                                             <span>Referral Form</span>
                                             <span class="urdu-label jameel-noori">ریفرل فارم</span>
                                         </label>
                                         <input type="file" class="form-control @error('referral_form') is-invalid @enderror" 
-                                               id="referral_form" name="referral_form" 
-                                               accept=".pdf,.jpg,.jpeg,.png" required>
-                                        <div class="file-requirements">Accepted formats: PDF, JPG, JPEG, PNG | Max size: 5MB</div>
+                                               id="referral_form" name="referral_form" accept=".pdf,.jpg,.jpeg,.png">
+                                        <div class="form-text">Max file size: 5MB</div>
                                         <div class="validation-msg" id="referral_form_msg"></div>
                                         @error('referral_form')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -1285,15 +1192,14 @@
                                         <div class="file-preview" id="referral_form_preview"></div>
                                     </div>
 
-                                    <div class="mb-3 file-input-group">
+                                    <div class="mb-3">
                                         <label for="affidavit" class="form-label">
                                             <span>Affidavit on Stamp Paper (Optional)</span>
                                             <span class="urdu-label jameel-noori">اسٹامپ پیپر پر بیان (اختیاری)</span>
                                         </label>
                                         <input type="file" class="form-control @error('affidavit') is-invalid @enderror" 
-                                               id="affidavit" name="affidavit" 
-                                               accept=".pdf,.jpg,.jpeg,.png">
-                                        <div class="file-requirements">Accepted formats: PDF, JPG, JPEG, PNG | Max size: 5MB</div>
+                                               id="affidavit" name="affidavit" accept=".pdf,.jpg,.jpeg,.png">
+                                        <div class="form-text">Max file size: 5MB</div>
                                         <div class="validation-msg" id="affidavit_msg"></div>
                                         @error('affidavit')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -1301,15 +1207,14 @@
                                         <div class="file-preview" id="affidavit_preview"></div>
                                     </div>
 
-                                    <div class="mb-3 file-input-group">
+                                    <div class="mb-3">
                                         <label for="additional_documents" class="form-label">
                                             <span>Additional Documents (Optional)</span>
                                             <span class="urdu-label jameel-noori">اضافی دستاویزات (اختیاری)</span>
                                         </label>
                                         <input type="file" class="form-control @error('additional_documents') is-invalid @enderror" 
-                                               id="additional_documents" name="additional_documents[]" 
-                                               accept=".pdf,.jpg,.jpeg,.png" multiple>
-                                        <div class="file-requirements">Accepted formats: PDF, JPG, JPEG, PNG | Max size: 5MB per file</div>
+                                               id="additional_documents" name="additional_documents[]" accept=".pdf,.jpg,.jpeg,.png" multiple>
+                                        <div class="form-text">Max file size: 5MB each</div>
                                         <div class="validation-msg" id="additional_documents_msg"></div>
                                         @error('additional_documents')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -1322,9 +1227,7 @@
 
                                     <div class="button-container">
                                         <button type="button" class="btn btn-primary prev-step">Previous</button>
-                                        <button type="submit" class="btn btn-success" id="submitBtn">
-                                            <i class="fas fa-paper-plane"></i> Submit Application
-                                        </button>
+                                        <button type="submit" class="btn btn-primary" id="submitBtn">Submit Admission</button>
                                     </div>
                                 </div>
                             </form>
@@ -1342,197 +1245,26 @@
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script>
         $(document).ready(function() {
-            // Form data persistence using localStorage
-            const FORM_STORAGE_KEY = 'hwh_admission_form_data';
-            
-            // Clear localStorage when page loads to ensure fresh start
-            localStorage.removeItem(FORM_STORAGE_KEY);
-            
-            // UPDATED AUTO-FILL FUNCTION
-            function autoFillForm(data) {
-                console.log('🚀 AUTO-FILL STARTED with data:', data);
+            // Debug mode
+            const DEBUG_MODE = true;
+
+            // Auto-fill form with prefill data
+            function autoFillForm() {
+                @if(isset($prefillData) && !empty($prefillData))
+                console.log('Auto-filling form with prefill data:', @json($prefillData));
                 
-                // Clear any previous validation errors
-                $('.validation-msg').hide();
-                $('.form-control, .form-select').removeClass('is-invalid');
+                // Fill form fields with prefill data
+                @foreach($prefillData as $key => $value)
+                    @if($key !== 'incharge_id' && $value)
+                    $('#{{ $key }}').val('{{ $value }}');
+                    @endif
+                @endforeach
                 
-                // Personal Information
-                if (data.patient_name) {
-                    $('#patient_name').val(data.patient_name);
-                    console.log('✅ Set patient_name:', data.patient_name);
-                }
-                if (data.father_name) {
-                    $('#father_name').val(data.father_name);
-                    console.log('✅ Set father_name:', data.father_name);
-                }
-                if (data.age) {
-                    $('#age').val(data.age.toString());
-                    console.log('✅ Set age:', data.age);
-                }
-                if (data.gender) {
-                    $('select[name="gender"]').val(data.gender);
-                    console.log('✅ Set gender:', data.gender);
-                }
-                if (data.phone) {
-                    $('#phone').val(data.phone);
-                    console.log('✅ Set phone:', data.phone);
-                }
+                // Show auto-fill notification
+                $('#autoFillNotification').show();
                 
-                // EDUCATION FIELD
-                if (data.education) {
-                    let educationValue = data.education;
-                    console.log('📚 Education data:', educationValue);
-                    
-                    // Handle different data structures
-                    if (typeof educationValue === 'object') {
-                        if (educationValue.value) educationValue = educationValue.value;
-                        else if (educationValue.education_level) educationValue = educationValue.education_level;
-                        else if (educationValue.level) educationValue = educationValue.level;
-                        else if (educationValue.name) educationValue = educationValue.name;
-                    }
-                    
-                    $('#education').val(educationValue);
-                    console.log('✅ Set education to:', educationValue);
-                }
-                
-                if (data.address) {
-                    $('#address').val(data.address);
-                    console.log('✅ Set address:', data.address);
-                }
-                
-                // Family Information
-                if (data.marital_status) {
-                    $('#marital_status').val(data.marital_status);
-                    updateDependentFields();
-                    console.log('✅ Set marital_status:', data.marital_status);
-                }
-                if (data.spouse_name) {
-                    $('#spouse_name').val(data.spouse_name);
-                    console.log('✅ Set spouse_name:', data.spouse_name);
-                }
-                
-                // CHILDREN DATA
-                if (data.children_count && data.children_count > 0) {
-                    console.log('👶 Processing children data. Count:', data.children_count);
-                    
-                    // Set children count first
-                    $('#children_count').val(data.children_count);
-                    
-                    // Trigger input to generate fields
-                    $('#children_count').trigger('input');
-                    
-                    // Wait for fields to be generated, then fill them
-                    setTimeout(() => {
-                        console.log('🕒 Filling children fields after generation...');
-                        
-                        // Get children data
-                        let childrenData = [];
-                        
-                        if (data.children && Array.isArray(data.children)) {
-                            childrenData = data.children;
-                            console.log('✅ Using children array with', childrenData.length, 'items');
-                        } else if (data.children_data && Array.isArray(data.children_data)) {
-                            childrenData = data.children_data;
-                            console.log('✅ Using children_data array with', childrenData.length, 'items');
-                        }
-                        
-                        // Fill each child's data
-                        if (childrenData.length > 0) {
-                            console.log(`🎯 Found ${childrenData.length} children to populate`);
-                            
-                            childrenData.forEach((child, index) => {
-                                if (index < data.children_count) {
-                                    console.log(`👶 Filling child ${index}:`, child);
-                                    
-                                    const nameField = $(`input[name="children[${index}][name]"]`);
-                                    const genderField = $(`select[name="children[${index}][gender]"]`);
-                                    const ageField = $(`input[name="children[${index}][age]"]`);
-                                    
-                                    if (nameField.length && child.name) {
-                                        nameField.val(child.name);
-                                        console.log(`✅ Set child ${index} name:`, child.name);
-                                    }
-                                    
-                                    if (genderField.length && child.gender) {
-                                        genderField.val(child.gender);
-                                        console.log(`✅ Set child ${index} gender:`, child.gender);
-                                    }
-                                    
-                                    if (ageField.length && child.age) {
-                                        ageField.val(child.age);
-                                        console.log(`✅ Set child ${index} age:`, child.age);
-                                    }
-                                }
-                            });
-                        }
-                        
-                        // Set boys and girls count
-                        if (data.boys_count) {
-                            $('#boys_count').val(data.boys_count);
-                            console.log('✅ Set boys_count:', data.boys_count);
-                        }
-                        if (data.girls_count) {
-                            $('#girls_count').val(data.girls_count);
-                            console.log('✅ Set girls_count:', data.girls_count);
-                        }
-                        
-                    }, 500);
-                }
-                
-                // Medical Information
-                if (data.admission_date) {
-                    $('#admission_date').val(data.admission_date);
-                    console.log('✅ Set admission_date:', data.admission_date);
-                }
-                if (data.reason) {
-                    $('#reason').val(data.reason);
-                    console.log('✅ Set reason:', data.reason);
-                }
-                if (data.disease_name) {
-                    $('#disease_name').val(data.disease_name);
-                    console.log('✅ Set disease_name:', data.disease_name);
-                }
-                if (data.treatment_details) {
-                    $('#treatment_details').val(data.treatment_details);
-                    console.log('✅ Set treatment_details');
-                }
-                if (data.case_history) {
-                    $('#case_history').val(data.case_history);
-                    console.log('✅ Set case_history');
-                }
-                if (data.other_diseases) {
-                    $('#other_diseases').val(data.other_diseases);
-                    console.log('✅ Set other_diseases');
-                }
-                if (data.religion) {
-                    $('#religion').val(data.religion);
-                    console.log('✅ Set religion:', data.religion);
-                }
-                
-                // Guardian Information
-                if (data.guardian_name) {
-                    $('#guardian_name').val(data.guardian_name);
-                    console.log('✅ Set guardian_name:', data.guardian_name);
-                }
-                if (data.guardian_contact) {
-                    $('#guardian_contact').val(data.guardian_contact);
-                    console.log('✅ Set guardian_contact:', data.guardian_contact);
-                }
-                if (data.relationship) {
-                    $('#relationship').val(data.relationship);
-                    console.log('✅ Set relationship:', data.relationship);
-                }
-                if (data.guardian_address) {
-                    $('#guardian_address').val(data.guardian_address);
-                    console.log('✅ Set guardian_address');
-                }
-                
-                // Save to localStorage
-                saveFormData();
-                
-                // Show success message
                 Toastify({
-                    text: "Form auto-filled with existing data!",
+                    text: "Form auto-filled with registration data!",
                     duration: 3000,
                     gravity: "top",
                     position: "right",
@@ -1540,159 +1272,12 @@
                         background: "var(--success-color)",
                     },
                 }).showToast();
-                
-                console.log('🎉 AUTO-FILL COMPLETED');
+                @endif
             }
 
-            // Save form data to localStorage
-            function saveFormData() {
-                const formData = {};
-                $('#medicalRegistrationForm').find('input, select, textarea').each(function() {
-                    const fieldName = $(this).attr('name');
-                    if (fieldName && !fieldName.includes('_token') && !$(this).attr('type') === 'file') {
-                        formData[fieldName] = $(this).val();
-                    }
-                });
-                
-                // Save children data
-                const childrenData = [];
-                $('#children_container .child-card').each(function(index) {
-                    const childData = {
-                        name: $(this).find(`input[name="children[${index}][name]"]`).val(),
-                        gender: $(this).find(`select[name="children[${index}][gender]"]`).val(),
-                        age: $(this).find(`input[name="children[${index}][age]"]`).val()
-                    };
-                    childrenData.push(childData);
-                });
-                formData.children = childrenData;
-                
-                localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(formData));
-            }
-            
-            // Load form data from localStorage
-            function loadFormData() {
-                const savedData = localStorage.getItem(FORM_STORAGE_KEY);
-                if (savedData) {
-                    const formData = JSON.parse(savedData);
-                    Object.keys(formData).forEach(fieldName => {
-                        if (fieldName === 'children') {
-                            // Handle children data separately
-                            return;
-                        }
-                        
-                        const field = $(`[name="${fieldName}"]`);
-                        if (field.length) {
-                            field.val(formData[fieldName]);
-                        }
-                    });
-                    
-                    // Load children data if exists
-                    if (formData.children && formData.children.length > 0) {
-                        const childrenCount = formData.children.length;
-                        $('#children_count').val(childrenCount).trigger('input');
-                        
-                        // Wait a bit for the children fields to be generated
-                        setTimeout(() => {
-                            formData.children.forEach((child, index) => {
-                                if (index < childrenCount) {
-                                    $(`input[name="children[${index}][name]"]`).val(child.name || '');
-                                    $(`select[name="children[${index}][gender]"]`).val(child.gender || '');
-                                    $(`input[name="children[${index}][age]"]`).val(child.age || '');
-                                }
-                            });
-                        }, 100);
-                    }
-                    
-                    // Update dependent fields
-                    updateDependentFields();
-                }
-            }
-            
-            // Clear form data from localStorage
-            function clearFormData() {
-                localStorage.removeItem(FORM_STORAGE_KEY);
-            }
-            
-            // Update dependent fields
-            function updateDependentFields() {
-                const maritalStatus = $('#marital_status').val();
-                const spouseField = $('#spouse_name_field');
-                
-                if (maritalStatus === 'Married') {
-                    spouseField.show();
-                } else {
-                    spouseField.hide();
-                    $('#spouse_name').val('');
-                }
-                
-                const childrenCount = parseInt($('#children_count').val()) || 0;
-                const boysField = $('#boys_count_field');
-                const girlsField = $('#girls_count_field');
-                
-                if (childrenCount > 0) {
-                    boysField.show();
-                    girlsField.show();
-                } else {
-                    boysField.hide();
-                    girlsField.hide();
-                }
-            }
-            
-            // CNIC Auto-fill functionality
-            function setupCnicAutoFill() {
-                const cnicInput = $('#cnic');
-                const searchResult = $('#cnicSearchResult');
-                const searchLoading = $('#cnicSearchLoading');
-                
-                let searchTimeout;
-                
-                cnicInput.on('input', function() {
-                    const cnic = $(this).val().trim();
-                    
-                    // Clear previous timeout
-                    clearTimeout(searchTimeout);
-                    
-                    // Hide previous results
-                    searchResult.hide();
-                    
-                    // Validate CNIC format
-                    const cnicRegex = /^\d{5}-\d{7}-\d{1}$/;
-                    if (!cnicRegex.test(cnic)) {
-                        return;
-                    }
-                    
-                    // Show loading indicator
-                    searchLoading.show();
-                    
-                    // Set timeout to search after user stops typing
-                    searchTimeout = setTimeout(() => {
-                        $.get(`/hwhadmissions/search-by-cnic?cnic=${encodeURIComponent(cnic)}`)
-                            .done(function(response) {
-                                searchLoading.hide();
-                                
-                                if (response.exists) {
-                                    searchResult.html(`<i class="fas fa-info-circle"></i> ${response.message}`).show();
-                                    searchResult.removeClass('text-danger').addClass('text-primary');
-                                    
-                                    // Auto-fill form if data is found
-                                    if (response.data) {
-                                        autoFillForm(response.data);
-                                    }
-                                } else {
-                                    searchResult.html(`<i class="fas fa-info-circle"></i> No existing record found. Please proceed with new registration.`).show();
-                                    searchResult.removeClass('text-danger').addClass('text-info');
-                                }
-                            })
-                            .fail(function(xhr, status, error) {
-                                searchLoading.hide();
-                                console.error('CNIC search error:', error);
-                                searchResult.html(`<i class="fas fa-exclamation-triangle"></i> Error searching for CNIC`).show();
-                                searchResult.removeClass('text-primary').addClass('text-danger');
-                            });
-                    }, 1000);
-                });
-            }
-            
+            // Call auto-fill on page load
+            autoFillForm();
+
             // Initialize form state
             function initializeForm() {
                 $('.step-progress').removeClass('active-1 active-2 active-3').addClass('active-1');
@@ -1704,12 +1289,25 @@
                 $('#admission_date').attr('max', today);
                 
                 // Initialize marital status visibility
-                updateDependentFields();
+                updateMaritalStatus();
                 
-                // Initialize children count
-                $('#children_count').trigger('input');
+                if (DEBUG_MODE) {
+                    $('#debugInfo').show();
+                    logDebug('Form initialized successfully');
+                }
             }
-            
+
+            // Update marital status fields visibility
+            function updateMaritalStatus() {
+                const maritalStatus = $('#marital_status').val();
+                if (maritalStatus === 'Married') {
+                    $('#spouse_name_field').show();
+                } else {
+                    $('#spouse_name_field').hide();
+                    $('#spouse_name').val('');
+                }
+            }
+
             // Step navigation
             $('.next-step').click(function() {
                 let currentStep = $('.form-step.active');
@@ -1718,7 +1316,7 @@
                     currentStep.removeClass('active');
                     nextStep.addClass('active');
                     updateProgress();
-                    saveFormData();
+                    logDebug('Moved to next step');
                 } else {
                     showToast("Please fill out all required fields correctly.", "error");
                 }
@@ -1730,26 +1328,33 @@
                 currentStep.removeClass('active');
                 prevStep.addClass('active');
                 updateProgress();
+                logDebug('Moved to previous step');
             });
-            
+
+            // Update progress bar
+            function updateProgress() {
+                let currentIndex = $('.form-step.active').index() + 1;
+                $('.step-progress').removeClass('active-1 active-2 active-3').addClass('active-' + currentIndex);
+                $('.step').removeClass('active completed');
+                $('.step:lt(' + currentIndex + ')').addClass('completed');
+                $('.step:eq(' + (currentIndex - 1) + ')').addClass('active');
+            }
+
             // Form validation
             function validateStep(step) {
                 let isValid = true;
                 let firstInvalidField = null;
-                let errorMessages = [];
                 
                 // Validate required fields
                 step.find('input[required], select[required], textarea[required]').each(function() {
                     const field = $(this);
                     const fieldId = field.attr('id');
                     const msgElement = $(`#${fieldId}_msg`);
-                    const fieldName = field.attr('name');
                     
                     if (!field.val().trim()) {
                         field.addClass('is-invalid');
                         msgElement.text('This field is required').addClass('error').show();
                         isValid = false;
-                        errorMessages.push(`${getFieldLabel(fieldName)} is required`);
                         if (!firstInvalidField) {
                             firstInvalidField = field;
                         }
@@ -1759,144 +1364,22 @@
                     }
                 });
                 
-                // Validate file fields in step 3
-                if (step.attr('id') === 'step-3') {
-                    const fileFields = [
-                        'id_card_front', 'id_card_back', 'passport_photos', 
-                        'medical_reports', 'referral_form'
-                    ];
-                    
-                    fileFields.forEach(fieldName => {
-                        const field = $(`#${fieldName}`);
-                        const msgElement = $(`#${fieldName}_msg`);
-                        
-                        if (field.attr('required')) {
-                            if (field.attr('multiple')) {
-                                // Multiple file input
-                                if (!field[0].files || field[0].files.length === 0) {
-                                    field.addClass('is-invalid');
-                                    msgElement.text('At least one file is required').addClass('error').show();
-                                    isValid = false;
-                                    errorMessages.push(`${getFieldLabel(fieldName)} is required`);
-                                    if (!firstInvalidField) {
-                                        firstInvalidField = field;
-                                    }
-                                } else {
-                                    field.removeClass('is-invalid');
-                                    msgElement.hide();
-                                }
-                            } else {
-                                // Single file input
-                                if (!field[0].files || field[0].files.length === 0) {
-                                    field.addClass('is-invalid');
-                                    msgElement.text('This file is required').addClass('error').show();
-                                    isValid = false;
-                                    errorMessages.push(`${getFieldLabel(fieldName)} is required`);
-                                    if (!firstInvalidField) {
-                                        firstInvalidField = field;
-                                    }
-                                } else {
-                                    field.removeClass('is-invalid');
-                                    msgElement.hide();
-                                }
-                            }
-                        }
-                    });
-                }
-                
-                // Validate children fields if applicable
-                if (step.attr('id') === 'step-1') {
-                    let childrenCount = parseInt($('#children_count').val()) || 0;
-                    
-                    if (childrenCount > 0) {
-                        // Validate children information
-                        $('#children_container input[required], #children_container select[required]').each(function() {
-                            const field = $(this);
-                            const fieldId = field.attr('id');
-                            const msgElement = $(`#${fieldId}_msg`);
-                            
-                            if (!field.val().trim()) {
-                                field.addClass('is-invalid');
-                                msgElement.text('This field is required').addClass('error').show();
-                                isValid = false;
-                                if (!firstInvalidField) {
-                                    firstInvalidField = field;
-                                }
-                            } else {
-                                field.removeClass('is-invalid');
-                                msgElement.hide();
-                            }
-                        });
-                        
-                        // Validate children count consistency
-                        let boysCount = parseInt($('#boys_count').val()) || 0;
-                        let girlsCount = parseInt($('#girls_count').val()) || 0;
-                        
-                        if (boysCount + girlsCount !== childrenCount) {
-                            $('#children_sum_error_field').show();
-                            $('#boys_count').addClass('is-invalid');
-                            $('#girls_count').addClass('is-invalid');
-                            $('#boys_count_msg').text('Number of boys and girls must equal the total number of children').addClass('error').show();
-                            $('#girls_count_msg').text('Number of boys and girls must equal the total number of children').addClass('error').show();
-                            isValid = false;
-                        } else {
-                            $('#children_sum_error_field').hide();
-                            $('#boys_count').removeClass('is-invalid');
-                            $('#girls_count').removeClass('is-invalid');
-                            $('#boys_count_msg').hide();
-                            $('#girls_count_msg').hide();
-                        }
-                    }
-                }
-                
-                // Validate phone numbers
-                step.find('input[type="tel"]').each(function() {
-                    const field = $(this);
-                    const fieldId = field.attr('id');
-                    const msgElement = $(`#${fieldId}_msg`);
-                    let phoneRegex = /^\+?[\d\s-]{10,15}$/;
-                    
-                    if (field.val() && !phoneRegex.test(field.val().replace(/\s/g, ''))) {
-                        field.addClass('is-invalid');
-                        msgElement.text('Please enter a valid phone number').addClass('error').show();
-                        isValid = false;
-                        if (!firstInvalidField) {
-                            firstInvalidField = field;
-                        }
-                    } else {
-                        field.removeClass('is-invalid');
-                        msgElement.hide();
-                    }
-                });
-                
-                // Validate CNIC number
+                // Validate CNIC format
                 if (step.find('#cnic').length) {
                     const cnicField = $('#cnic');
                     const cnicMsg = $('#cnic_msg');
-                    let cnicRegex = /^\d{5}-\d{7}-\d{1}$/;
+                    const cnicValue = cnicField.val().trim();
                     
-                    if (cnicField.val() && !cnicRegex.test(cnicField.val())) {
+                    // Basic CNIC validation (5-7-1 format)
+                    const cnicRegex = /^\d{5}-\d{7}-\d{1}$/;
+                    if (cnicValue && !cnicRegex.test(cnicValue)) {
                         cnicField.addClass('is-invalid');
-                        cnicMsg.text('Please enter a valid CNIC number (format: 12345-1234567-1)').addClass('error').show();
+                        cnicMsg.text('Please enter a valid CNIC (format: 12345-1234567-1)').addClass('error').show();
                         isValid = false;
                         if (!firstInvalidField) {
                             firstInvalidField = cnicField;
                         }
-                    } else {
-                        cnicField.removeClass('is-invalid');
-                        cnicMsg.hide();
                     }
-                }
-                
-                // Show error messages
-                if (!isValid) {
-                    $('#errorList').empty();
-                    errorMessages.forEach(msg => {
-                        $('#errorList').append(`<li>${msg}</li>`);
-                    });
-                    $('#errorAlert').show();
-                } else {
-                    $('#errorAlert').hide();
                 }
                 
                 // Scroll to first invalid field
@@ -1908,158 +1391,14 @@
                 
                 return isValid;
             }
-            
-            // Helper function to get field label
-            function getFieldLabel(fieldName) {
-                const labels = {
-                    'patient_name': 'Patient Name',
-                    'father_name': 'Father\'s Name',
-                    'age': 'Age',
-                    'gender': 'Gender',
-                    'cnic': 'CNIC',
-                    'phone': 'Phone Number',
-                    'address': 'Address',
-                    'marital_status': 'Marital Status',
-                    'guardian_name': 'Guardian Name',
-                    'guardian_contact': 'Guardian Contact',
-                    'relationship': 'Relationship',
-                    'guardian_address': 'Guardian Address',
-                    'admission_date': 'Admission Date',
-                    'disease_name': 'Disease Name',
-                    'treatment_details': 'Treatment Details',
-                    'case_history': 'Case History',
-                    'id_card_front': 'ID Card Front',
-                    'id_card_back': 'ID Card Back',
-                    'passport_photos': 'Passport Photos',
-                    'medical_reports': 'Medical Reports',
-                    'referral_form': 'Referral Form'
-                };
-                
-                return labels[fieldName] || fieldName;
-            }
-            
-            // Update progress bar
-            function updateProgress() {
-                let currentIndex = $('.form-step.active').index() + 1;
-                $('.step-progress').removeClass('active-1 active-2 active-3').addClass('active-' + currentIndex);
-                $('.step').removeClass('active completed');
-                $('.step:lt(' + currentIndex + ')').addClass('completed');
-                $('.step:eq(' + (currentIndex - 1) + ')').addClass('active');
-            }
-            
-            // Reset form
-            $('.reset-form').click(function() {
-                if (confirm('Are you sure you want to reset the form? All entered data will be lost.')) {
-                    $('#medicalRegistrationForm')[0].reset();
-                    $('.form-step').removeClass('active');
-                    $('#step-1').addClass('active');
-                    initializeForm();
-                    $('input, select, textarea').removeClass('is-invalid');
-                    $('.file-preview').empty();
-                    $('.validation-msg').hide();
-                    $('#errorAlert').hide();
-                    clearFormData();
-                    showToast("Form has been reset successfully.", "success");
-                }
-            });
-            
-            // Show/hide children gender fields and handle dynamic children
-            $('#children_count').on('input', function() {
-                let childrenCount = parseInt($(this).val()) || 0;
-                if (childrenCount > 0) {
-                    $('#boys_count_field').show();
-                    $('#girls_count_field').show();
-                    generateChildrenFields(childrenCount);
-                } else {
-                    $('#boys_count_field').hide();
-                    $('#girls_count_field').hide();
-                    $('#children_container').empty();
-                    $('#children_sum_error_field').hide();
-                }
-                saveFormData();
-            });
-            
-            // Generate dynamic children fields
-            function generateChildrenFields(count) {
-                $('#children_container').empty();
-                
-                if (count > 0) {
-                    const title = document.createElement('h6');
-                    title.className = 'mt-3 mb-2';
-                    title.innerHTML = '<span>Children Information</span> <span class="urdu-label jameel-noori">بچوں کی معلومات</span>';
-                    $('#children_container').append(title);
-                    
-                    for (let i = 0; i < count; i++) {
-                        const childCard = document.createElement('div');
-                        childCard.className = 'child-card';
-                        childCard.id = `child-card-${i}`;
-                        childCard.innerHTML = `
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label required">
-                                        <span>Child Name</span>
-                                        <span class="urdu-label jameel-noori">بچے کا نام</span>
-                                    </label>
-                                    <input type="text" class="form-control child-name" name="children[${i}][name]" id="child-name-${i}" required>
-                                    <div class="validation-msg" id="child-name-${i}_msg"></div>
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label required">
-                                        <span>Gender</span>
-                                        <span class="urdu-label jameel-noori">جنس</span>
-                                    </label>
-                                    <select class="form-select child-gender" name="children[${i}][gender]" id="child-gender-${i}" required>
-                                        <option value="">Select</option>
-                                        <option value="male">Male</option>
-                                        <option value="female">Female</option>
-                                    </select>
-                                    <div class="validation-msg" id="child-gender-${i}_msg"></div>
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">
-                                        <span>Age</span>
-                                        <span class="urdu-label jameel-noori">عمر</span>
-                                    </label>
-                                    <input type="number" class="form-control child-age" name="children[${i}][age]" id="child-age-${i}" min="0" max="25">
-                                    <div class="validation-msg" id="child-age-${i}_msg"></div>
-                                </div>
-                            </div>
-                        `;
-                        $('#children_container').append(childCard);
-                    }
-                }
-            }
-            
-            // Validate children count consistency
-            $('#boys_count, #girls_count').on('input', function() {
-                let childrenCount = parseInt($('#children_count').val()) || 0;
-                let boysCount = parseInt($('#boys_count').val()) || 0;
-                let girlsCount = parseInt($('#girls_count').val()) || 0;
-                
-                if (childrenCount > 0 && boysCount + girlsCount !== childrenCount) {
-                    $('#children_sum_error_field').show();
-                    $('#boys_count').addClass('is-invalid');
-                    $('#girls_count').addClass('is-invalid');
-                    $('#boys_count_msg').text('Number of boys and girls must equal the total number of children').addClass('error').show();
-                    $('#girls_count_msg').text('Number of boys and girls must equal the total number of children').addClass('error').show();
-                } else {
-                    $('#children_sum_error_field').hide();
-                    $('#boys_count').removeClass('is-invalid');
-                    $('#girls_count').removeClass('is-invalid');
-                    $('#boys_count_msg').hide();
-                    $('#girls_count_msg').hide();
-                }
-                saveFormData();
-            });
-            
+
             // Show/hide spouse field based on marital status
             $('#marital_status').on('change', function() {
-                updateDependentFields();
-                saveFormData();
+                updateMaritalStatus();
             });
-            
+
             // CNIC formatting
-            document.getElementById('cnic').addEventListener('input', function(e) {
+            $('#cnic').on('input', function(e) {
                 let value = e.target.value.replace(/\D/g, '');
                 
                 if (value.length > 5) {
@@ -2071,59 +1410,26 @@
                 
                 e.target.value = value;
             });
-            
-            // File preview functionality
-            $('input[type="file"]').on('change', function() {
-                const previewId = $(this).attr('id') + '_preview';
-                const previewElement = $('#' + previewId);
-                previewElement.empty();
-                
-                if (this.files && this.files.length > 0) {
-                    if (this.multiple) {
-                        for (let i = 0; i < this.files.length; i++) {
-                            previewElement.append(`<div>${this.files[i].name} (${formatFileSize(this.files[i].size)})</div>`);
-                        }
-                    } else {
-                        previewElement.text(`${this.files[0].name} (${formatFileSize(this.files[0].size)})`);
-                    }
+
+            // Reset form
+            $('.reset-form').click(function() {
+                if (confirm('Are you sure you want to reset the form? All entered data will be lost.')) {
+                    $('#medicalRegistrationForm')[0].reset();
+                    $('.form-step').removeClass('active');
+                    $('#step-1').addClass('active');
+                    initializeForm();
+                    $('input, select, textarea').removeClass('is-invalid');
+                    $('.file-preview').empty();
+                    $('.validation-msg').hide();
+                    showToast("Form has been reset successfully.", "success");
+                    logDebug('Form reset');
                 }
             });
-            
-            function formatFileSize(bytes) {
-                if (bytes === 0) return '0 Bytes';
-                const k = 1024;
-                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-                const i = Math.floor(Math.log(bytes) / Math.log(k));
-                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-            }
-            
-            // File size validation
-            $('input[type="file"]').on('change', function() {
-                const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-                const files = this.files;
-                const fieldId = $(this).attr('id');
-                const msgElement = $(`#${fieldId}_msg`);
-                
-                if (files) {
-                    for (let i = 0; i < files.length; i++) {
-                        if (files[i].size > maxSize) {
-                            msgElement.text(`File ${files[i].name} exceeds the maximum size of 5MB`).addClass('error').show();
-                            $(this).addClass('is-invalid');
-                            this.value = '';
-                            const previewId = $(this).attr('id') + '_preview';
-                            $('#' + previewId).empty();
-                            break;
-                        } else {
-                            msgElement.hide();
-                            $(this).removeClass('is-invalid');
-                        }
-                    }
-                }
-            });
-            
+
             // Form submission
             $('#medicalRegistrationForm').on('submit', function(e) {
                 console.log('Form submission started...');
+                logDebug('Form submission initiated');
                 
                 // Validate all steps before submission
                 let allStepsValid = true;
@@ -2136,34 +1442,30 @@
                             $(this).addClass('active');
                             updateProgress();
                         }
-                        return false; // break the loop
+                        return false;
                     }
                 });
                 
                 if (!allStepsValid) {
                     e.preventDefault();
                     showToast("Please fix all validation errors before submitting.", "error");
+                    logDebug('Form validation failed');
                     return;
                 }
                 
-                // Show loading overlay and let form submit naturally
+                // Show loading overlay
                 $('#loadingOverlay').show();
                 $('#submitBtn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Submitting...');
                 
-                console.log('Form is being submitted to server...');
-                // Let the form submit naturally - server validation will handle errors
-                
-                // Clear form data after successful submission
-                setTimeout(() => {
-                    clearFormData();
-                }, 2000);
+                logDebug('Form submitted successfully');
+                // Let the form submit naturally
             });
-            
+
             // Remove loading if page is refreshed
             $(window).on('beforeunload', function() {
                 $('#loadingOverlay').hide();
             });
-            
+
             // Toast function
             function showToast(message, type = "info") {
                 const backgroundColor = type === "error" ? "#A93226" : 
@@ -2180,25 +1482,27 @@
                     },
                 }).showToast();
             }
-            
-            // Save form data on input
-            $('#medicalRegistrationForm').on('input', 'input, select, textarea', function() {
-                saveFormData();
-            });
-            
-            // Save children data when children fields change
-            $(document).on('input', '#children_container input, #children_container select', function() {
-                saveFormData();
-            });
-            
-            // Initialize CNIC auto-fill
-            setupCnicAutoFill();
-            
-            // Load any saved form data
-            loadFormData();
-            
+
+            // Debug logging
+            function logDebug(message) {
+                if (DEBUG_MODE) {
+                    const timestamp = new Date().toLocaleTimeString();
+                    $('#debugContent').prepend(`<div>[${timestamp}] ${message}</div>`);
+                    console.log(`[DEBUG] ${message}`);
+                }
+            }
+
             // Initialize form on load
             initializeForm();
+
+            // Log form data for debugging
+            $('#medicalRegistrationForm').on('input', 'input, select, textarea', function() {
+                if (DEBUG_MODE) {
+                    const fieldName = $(this).attr('name');
+                    const fieldValue = $(this).val();
+                    logDebug(`Field changed: ${fieldName} = ${fieldValue}`);
+                }
+            });
         });
     </script>
 </body>

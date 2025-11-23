@@ -18,4 +18,12 @@ class Incharge extends Model
     ];
     
     protected $table = 'incharges';
+
+    /**
+     * User relationship
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

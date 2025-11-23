@@ -430,19 +430,12 @@
                     </div>
                 </div>
                 
-                {{-- Discharge buttons commented out - will implement later --}}
-                {{--
-                <a href="{{ route('hwh-discharges.index') }}" 
-                   class="inline-flex items-center justify-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-200 font-medium text-sm">
-                    <i class="fas fa-sign-out-alt header-icon"></i>
-                    Discharge Patients
-                </a>
-                <a href="{{ route('hwh-discharges.discharged-list') }}" 
+                <!-- ✅ DISCHARGED LIST BUTTON ONLY -->
+                <a href="{{ route('hwhadmissions.discharges.discharged-list') }}" 
                    class="inline-flex items-center justify-center px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition duration-200 font-medium text-sm">
                     <i class="fas fa-list header-icon"></i>
                     Discharged List
                 </a>
-                --}}
             </div>
         </div>
 
@@ -526,10 +519,8 @@
                                                     Edit
                                                 </a>
                                                 <div class="dropdown-divider"></div>
-                                                {{-- Discharge option commented out - will implement later --}}
-                                                {{--
                                                 @if($admission->status !== 'discharged')
-                                                    <a href="{{ route('hwh-discharges.create', $admission->id) }}" class="dropdown-item">
+                                                    <a href="{{ route('hwhadmissions.discharges.create', $admission->id) }}" class="dropdown-item">
                                                         <i class="fas fa-sign-out-alt text-red-500"></i>
                                                         Discharge
                                                     </a>
@@ -539,7 +530,6 @@
                                                         Discharged
                                                     </button>
                                                 @endif
-                                                --}}
                                             </div>
                                         </div>
                                     </td>
@@ -598,18 +588,16 @@
                             No patient admission forms have been submitted yet.
                         @endif
                     </p>
-                    {{-- Discharged list link commented out --}}
-                    {{--
+                    <!-- ✅ DISCHARGED LIST LINK -->
                     @if(request('status') == 'discharged')
                         <div class="mt-4">
-                            <a href="{{ route('hwh-discharges.discharged-list') }}" 
+                            <a href="{{ route('hwhadmissions.discharges.discharged-list') }}" 
                                class="inline-flex items-center px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition duration-200 text-sm">
                                 <i class="fas fa-list header-icon"></i>
                                 View Full Discharged List
                             </a>
                         </div>
                     @endif
-                    --}}
                 </div>
             @endif
         </div>

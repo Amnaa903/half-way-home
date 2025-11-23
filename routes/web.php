@@ -12,12 +12,45 @@ use App\Http\Controllers\InchargeController;
 use App\Http\Controllers\DeoController;
 use App\Http\Controllers\HWHAdmissionController;
 
-// Public Routes
 Route::get('/', [HomeController::class, 'welcome'])->name('welcome');
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-// ==================== PUBLIC CNIC SEARCH ROUTE ====================
-Route::get('/hwhadmissions/search-by-cnic', [HWHAdmissionController::class, 'searchByCnic'])->name('hwhadmissions.search-by-cnic');
+// ==================== PUBLIC HWH ADMISSIONS ROUTES ====================
+Route::prefix('hwhadmissions')->name('hwhadmissions.')->group(function () {
+    // CNIC Search
+    Route::get('/search-by-cnic', [HWHAdmissionController::class, 'searchByCnic'])->name('search-by-cnic');
+    
+    // Create admission form (accessible from pending registration)
+    Route::get('/create', [HWHAdmissionController::class, 'create'])->name('create');
+    // Store admission data
+    Route::post('/', [HWHAdmissionController::class, 'store'])->name('store');
+    // List all admissions
+    Route::get('/', [HWHAdmissionController::class, 'index'])->name('index');
+    // Show single admission
+    Route::get('/{id}', [HWHAdmissionController::class, 'show'])->name('show');
+    // Edit admission form
+    Route::get('/{id}/edit', [HWHAdmissionController::class, 'edit'])->name('edit');
+    // Update admission
+    Route::put('/{id}', [HWHAdmissionController::class, 'update'])->name('update');
+    // Delete admission
+    Route::delete('/{id}', [HWHAdmissionController::class, 'destroy'])->name('destroy');
+    // Show attachments
+    Route::get('/{id}/attachment/{field}', [HWHAdmissionController::class, 'showAttachment'])->name('attachment.show');
+    
+    // ✅ DISCHARGE SYSTEM ROUTES - PUBLIC
+    Route::prefix('discharges')->name('discharges.')->group(function () {
+        // Active patients for discharge
+        Route::get('/', [HWHAdmissionController::class, 'dischargeIndex'])->name('index');
+        // Discharge form
+        Route::get('/create/{id}', [HWHAdmissionController::class, 'dischargeCreate'])->name('create');
+        // Process discharge
+        Route::post('/', [HWHAdmissionController::class, 'dischargeStore'])->name('store');
+        // Discharged patients list
+        Route::get('/discharged-list', [HWHAdmissionController::class, 'dischargedList'])->name('discharged-list');
+        // Reverse discharge
+        Route::post('/reverse/{id}', [HWHAdmissionController::class, 'reverseDischarge'])->name('reverse');
+    });
+});
 
 // Authentication Routes
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -43,26 +76,6 @@ Route::middleware(['auth'])->group(function () {
         return view('detail-reports');
     })->name('detailReports');
     
-    // ==================== HWH ADMISSIONS ROUTES ====================
-    Route::prefix('hwhadmissions')->name('hwhadmissions.')->group(function () {
-        // Create admission form (accessible from pending registration)
-        Route::get('/create', [HWHAdmissionController::class, 'create'])->name('create');
-        // Store admission data
-        Route::post('/', [HWHAdmissionController::class, 'store'])->name('store');
-        // List all admissions
-        Route::get('/', [HWHAdmissionController::class, 'index'])->name('index');
-        // Show single admission
-        Route::get('/{id}', [HWHAdmissionController::class, 'show'])->name('show');
-        // Edit admission form
-        Route::get('/{id}/edit', [HWHAdmissionController::class, 'edit'])->name('edit');
-        // Update admission
-        Route::put('/{id}', [HWHAdmissionController::class, 'update'])->name('update');
-        // Delete admission
-        Route::delete('/{id}', [HWHAdmissionController::class, 'destroy'])->name('destroy');
-        // Show attachments
-        Route::get('/{id}/attachment/{field}', [HWHAdmissionController::class, 'showAttachment'])->name('attachment.show');
-    });
-    
     // ==================== INCHARGE ROUTES ====================
     Route::prefix('incharge')->name('incharge.')->group(function () {
         // Incharge Dashboard
@@ -76,6 +89,10 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/store', [InchargeController::class, 'storeRegistration'])->name('store');
             // View registration list
             Route::get('/list', [InchargeController::class, 'registrationList'])->name('list');
+            // Get registration data for editing
+            Route::get('/{id}/edit-data', [InchargeController::class, 'getRegistrationData'])->name('edit.data');
+            // Update registration data
+            Route::put('/{id}', [InchargeController::class, 'updateRegistration'])->name('update');
             // Delete registration entry
             Route::delete('/{id}', [InchargeController::class, 'destroyRegistration'])->name('destroy');
             // Bulk delete registrations
@@ -94,10 +111,8 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/pending', [InchargeController::class, 'pendingDischargeList'])->name('pending');
             // Delete discharge entry
             Route::delete('/{id}', [InchargeController::class, 'destroyDischarge'])->name('destroy');
-            // Bulk delete discharges - ADDED
+            // Bulk delete discharges
             Route::post('/bulk-delete', [InchargeController::class, 'bulkDeleteDischarge'])->name('bulk-delete');
-            // Export discharges - ADDED
-            Route::get('/export', [InchargeController::class, 'exportDischarges'])->name('export');
         });
         
         // CNIC Check Route
@@ -109,14 +124,48 @@ Route::middleware(['auth'])->group(function () {
         // Resident Management Routes
         Route::get('/residents/list', [InchargeController::class, 'listResidents'])->name('residents.list');
         Route::get('/residents/pending', [InchargeController::class, 'pendingRegistration'])->name('pending.registration');
+        Route::get('/pending-list', [InchargeController::class, 'pendingList'])->name('pending.list');
+        Route::delete('/pending/{id}', [InchargeController::class, 'deletePending'])->name('pending.delete');
+        
+        // ==================== OLD ADMISSIONS ROUTES ====================
+        Route::prefix('admissions')->name('admissions.')->group(function () {
+            // Old registration list route
+            Route::get('/registerlist', [InchargeController::class, 'index'])->name('registerlist');
+            // Old edit list route
+            Route::get('/editlist', [InchargeController::class, 'editlist'])->name('editlist');
+            // Old create route
+            Route::get('/preregister', [InchargeController::class, 'create'])->name('preregister');
+            // Old store route
+            Route::post('/store', [InchargeController::class, 'store'])->name('store');
+            // Old destroy route
+            Route::delete('/registerlist/{id}', [InchargeController::class, 'destroy'])->name('destroy');
+            // Old registered route
+            Route::get('/registered', [InchargeController::class, 'registered'])->name('registered');
+        });
+        
+        // Check CNIC Route
+        Route::post('/check-cnic-exists', [InchargeController::class, 'checkCnic'])->name('check.cnic.exists');
     });
     
     // ==================== DEO ROUTES ====================
     Route::prefix('deo')->name('deo.')->group(function () {
+        // DEO Dashboard
         Route::get('/dashboard', [DeoController::class, 'dashboard'])->name('dashboard');
         
-        // DEO Pending Registration Route
-        Route::get('/pending-registration', [InchargeController::class, 'deoPendingRegistration'])->name('pending.registration');
+        // ==================== DEO REGISTRATION ROUTES ====================
+        Route::prefix('registration')->name('registration.')->group(function () {
+            // DEO Pending Registration List
+            Route::get('/pending', [InchargeController::class, 'deoPendingRegistration'])->name('pending');
+            // DEO Approve Registration
+            Route::put('/{id}/approve', [InchargeController::class, 'deoApproveRegistration'])->name('approve');
+            // DEO Registration Details
+            Route::get('/{id}/details', [InchargeController::class, 'deoRegistrationDetails'])->name('details');
+            // DEO Delete Registration
+            Route::delete('/{id}', [InchargeController::class, 'deoDestroyRegistration'])->name('destroy');
+        });
+        
+        // DEO Pending List
+        Route::get('/pending-list', [InchargeController::class, 'deoPendingList'])->name('pending.list');
         
         // ==================== DEO DISCHARGE ROUTES ====================
         Route::prefix('discharge')->name('discharge.')->group(function () {
@@ -124,17 +173,27 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/pending', [InchargeController::class, 'deoPendingDischarge'])->name('pending');
             // Delete discharge entry
             Route::delete('/{id}', [InchargeController::class, 'destroyDischarge'])->name('destroy');
-            // Bulk delete discharges - ADDED
+            // Bulk delete discharges
             Route::post('/bulk-delete', [InchargeController::class, 'bulkDeleteDischarge'])->name('bulk-delete');
         });
         
         // DEO HWH Admissions Management
         Route::get('/hwh-admissions', [HWHAdmissionController::class, 'index'])->name('hwh.admissions');
         Route::get('/hwh-admissions/{id}', [HWHAdmissionController::class, 'show'])->name('hwh.admissions.show');
+        
+        // ✅ DEO DISCHARGE SYSTEM ACCESS
+        Route::prefix('hwh-discharges')->name('hwh.discharges.')->group(function () {
+            Route::get('/', [HWHAdmissionController::class, 'dischargeIndex'])->name('index');
+            Route::get('/create/{id}', [HWHAdmissionController::class, 'dischargeCreate'])->name('create');
+            Route::post('/', [HWHAdmissionController::class, 'dischargeStore'])->name('store');
+            Route::get('/discharged-list', [HWHAdmissionController::class, 'dischargedList'])->name('discharged-list');
+            Route::post('/reverse/{id}', [HWHAdmissionController::class, 'reverseDischarge'])->name('reverse');
+        });
     });
     
     // ==================== ADMIN ROUTES ====================
     Route::prefix('admin')->name('admin.')->group(function () {
+        // Admin Dashboard
         Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
         
         // Admin HWH Admissions Management
@@ -142,15 +201,86 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/hwh-admissions/{id}', [HWHAdmissionController::class, 'show'])->name('hwh.admissions.show');
         Route::delete('/hwh-admissions/{id}', [HWHAdmissionController::class, 'destroy'])->name('hwh.admissions.destroy');
         
+        // Admin Registration Management
+        Route::get('/pending-registration', [InchargeController::class, 'deoPendingRegistration'])->name('pending.registration');
+        Route::delete('/registration/{id}', [InchargeController::class, 'deoDestroyRegistration'])->name('registration.destroy');
+        
         // Admin Discharge Management
         Route::get('/discharge/pending', [InchargeController::class, 'deoPendingDischarge'])->name('discharge.pending');
         Route::delete('/discharge/{id}', [InchargeController::class, 'destroyDischarge'])->name('discharge.destroy');
-        // Admin bulk delete discharges - ADDED
+        // Admin bulk delete discharges
         Route::post('/discharge/bulk-delete', [InchargeController::class, 'bulkDeleteDischarge'])->name('discharge.bulk-delete');
+        
+        // ✅ ADMIN DISCHARGE SYSTEM ACCESS
+        Route::prefix('hwh-discharges')->name('hwh.discharges.')->group(function () {
+            Route::get('/', [HWHAdmissionController::class, 'dischargeIndex'])->name('index');
+            Route::get('/create/{id}', [HWHAdmissionController::class, 'dischargeCreate'])->name('create');
+            Route::post('/', [HWHAdmissionController::class, 'dischargeStore'])->name('store');
+            Route::get('/discharged-list', [HWHAdmissionController::class, 'dischargedList'])->name('discharged-list');
+            Route::post('/reverse/{id}', [HWHAdmissionController::class, 'reverseDischarge'])->name('reverse');
+        });
+    });
+
+    // ==================== ADDITIONAL ROUTES FOR COMPATIBILITY ====================
+    
+    // Direct routes for easier access
+    Route::get('/incharge/create-registration', [InchargeController::class, 'createRegistration'])->name('incharge.create.registration');
+    Route::post('/incharge/store-registration', [InchargeController::class, 'storeRegistration'])->name('incharge.store.registration');
+    Route::get('/incharge/registration-list', [InchargeController::class, 'registrationList'])->name('incharge.registration.list');
+    
+    // DEO direct routes
+    Route::get('/deo/pending-registration', [InchargeController::class, 'deoPendingRegistration'])->name('deo.pending.registration');
+    
+    // Resource routes for incharges (for basic CRUD operations)
+    Route::resource('incharges', InchargeController::class)->except(['create', 'store', 'edit', 'update']);
+    
+    // Additional utility routes
+    Route::get('/check-cnic-global', [InchargeController::class, 'checkCnic'])->name('check.cnic.global');
+    
+    // Bulk operations
+    Route::post('/bulk/registrations/delete', [InchargeController::class, 'bulkDeleteRegistration'])->name('bulk.registrations.delete');
+    Route::post('/bulk/discharges/delete', [InchargeController::class, 'bulkDeleteDischarge'])->name('bulk.discharges.delete');
+    
+    // Export routes
+    Route::get('/export/registrations', [InchargeController::class, 'exportRegistrations'])->name('export.registrations');
+    
+    // Registration flow routes
+    Route::post('/register-from-pending', [InchargeController::class, 'registerAgain'])->name('register.from.pending');
+    
+    // Dashboard redirects
+    Route::get('/incharge', function () {
+        return redirect()->route('incharge.dashboard');
+    });
+    
+    Route::get('/deo', function () {
+        return redirect()->route('deo.dashboard');
+    });
+    
+    Route::get('/admin', function () {
+        return redirect()->route('admin.dashboard');
     });
 });
 
-// Fallback Route
+// ==================== PUBLIC UTILITY ROUTES ====================
+Route::get('/system-info', function () {
+    return response()->json([
+        'system' => 'Half Way Home Management System',
+        'version' => '2.0',
+        'modules' => [
+            'Incharge Registration',
+            'DEO Approval', 
+            'HWH Admissions',
+            'Discharge Management'
+        ]
+    ]);
+});
+
+// Health check route
+Route::get('/health', function () {
+    return response()->json(['status' => 'healthy', 'timestamp' => now()]);
+});
+
+// Fixed Fallback Route
 Route::fallback(function () {
-    return view('errors.404');
+    return response()->view('errors.404', [], 404);
 });

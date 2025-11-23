@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class HWHAdmission extends Model
 {
@@ -53,18 +54,14 @@ class HWHAdmission extends Model
         'affidavit',
         'additional_documents',
         
-        // Family Attachments & Additional Fields
+        // Additional Fields
         'incharge_id',
         'reference_id',
-        'family_contact',
-        'emergency_contact',
-        'blood_group',
-        'allergies',
-        'current_medication',
         
-        // Status
+        // Discharge Fields
         'status',
         'discharge_date',
+        'discharge_reason',
         'discharge_notes'
     ];
 

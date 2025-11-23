@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Schema; // ✅ YEH CORRECT NAMESPACE HAI
 
 return new class extends Migration
 {
@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('hwh_admissions', function (Blueprint $table) {
             $table->id();
             
-            // Personal Information
+            // Personal Information - EXISTING
             $table->string('patient_name');
             $table->string('father_name');
             $table->integer('age');
@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('education')->nullable();
             $table->text('address');
             
-            // Family Information
+            // Family Information - EXISTING
             $table->enum('marital_status', ['Single', 'Married', 'Widowed', 'Divorced']);
             $table->string('spouse_name')->nullable();
             $table->integer('children_count')->default(0);
@@ -29,13 +29,13 @@ return new class extends Migration
             $table->integer('girls_count')->default(0);
             $table->string('religion')->nullable();
             
-            // Guardian Information
+            // Guardian Information - EXISTING
             $table->string('guardian_name');
             $table->string('guardian_contact', 15);
             $table->string('relationship');
             $table->text('guardian_address');
             
-            // Medical History
+            // Medical History - EXISTING
             $table->date('admission_date');
             $table->text('reason')->nullable();
             $table->string('disease_name');
@@ -43,7 +43,7 @@ return new class extends Migration
             $table->text('case_history');
             $table->text('other_diseases')->nullable();
             
-            // File paths
+            // File paths - EXISTING
             $table->string('id_card_front');
             $table->string('id_card_back');
             $table->json('passport_photos');
@@ -52,9 +52,11 @@ return new class extends Migration
             $table->string('affidavit')->nullable();
             $table->json('additional_documents')->nullable();
             
-            // Status
+            // ✅ DISCHARGE FIELDS ADDED
             $table->enum('status', ['active', 'discharged'])->default('active');
             $table->date('discharge_date')->nullable();
+            $table->text('discharge_reason')->nullable();
+            $table->text('discharge_notes')->nullable();
             
             $table->timestamps();
         });

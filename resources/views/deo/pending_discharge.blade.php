@@ -6,13 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="">
   <meta name="author" content="">
-  <link href="{{ asset('images/logo.png') }}" rel="icon">
+  <link href="http://127.0.0.1:8000/images/logo.png" rel="icon">
   <title>DEO - Pending Discharges</title>
   
-  <link href="{{ asset('admin/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
-  <link href="{{ asset('admin/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet" type="text/css">
-  <link href="{{ asset('admin/css/ruang-admin.css') }}" rel="stylesheet">
-  <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+  <link href="http://127.0.0.1:8000/admin/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+  <link href="http://127.0.0.1:8000/admin/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+  <link href="http://127.0.0.1:8000/admin/css/ruang-admin.css" rel="stylesheet">
+  <link href="http://127.0.0.1:8000/css/app.css" rel="stylesheet">
   
   <style>
     body {
@@ -150,13 +150,12 @@
                     <i class="fa fa-cog mr-2"></i> Settings
                   </a>
                   <div class="dropdown-divider"></div>
-                  <a class="dropdown-item" href="{{ route('logout') }}"
+                  <a class="dropdown-item" href="http://127.0.0.1:8000/logout"
                      onclick="event.preventDefault(); document.getElementById('logout-form').submit();" style="color: #FFFFFF;">
                     <i class="fa fa-sign-out mr-2"></i> Logout
                   </a>
-                  <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                    @csrf
-                  </form>
+                  <form id="logout-form" action="http://127.0.0.1:8000/logout" method="POST" style="display: none;">
+                    <input type="hidden" name="_token" value="WAJMJ7uS9DqKKtJsGzkxBjAGlPXOl0yFafP9AisT" autocomplete="off">                  </form>
                 </div>
               </li>
             </ul>
@@ -175,21 +174,16 @@
             <div class="card-body">
               
               @if(session('success'))
-                <div class="alert alert-success">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
                   {{ session('success') }}
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
                 </div>
               @endif
-
-              @if(session('auto_removed'))
-                <div class="alert alert-info">
-                  {{ session('auto_removed') }}
-                </div>
-              @endif
-              
-              @if($pendingDischarges->count() > 0)
-              <form id="bulkDeleteForm" action="{{ route('deo.discharge.bulk-delete') }}" method="POST">
-                @csrf
-                <div class="mb-3">
+                            
+              <form id="bulkDeleteForm" action="http://127.0.0.1:8000/deo/discharge/bulk-delete" method="POST">
+                <input type="hidden" name="_token" value="WAJMJ7uS9DqKKtJsGzkxBjAGlPXOl0yFafP9AisT" autocomplete="off">                <div class="mb-3">
                   <button type="submit" class="btn-delete" onclick="return confirm('Are you sure you want to delete selected discharges?')">
                     <i class="fas fa-trash"></i> Delete Selected
                   </button>
@@ -217,23 +211,24 @@
                         <td>
                           <input type="checkbox" name="selected_discharges[]" value="{{ $discharge->id }}" form="bulkDeleteForm">
                         </td>
-                        <td>{{ $discharge->resident_name }}</td>
+                        <td>{{ $discharge->name }}</td>
                         <td>{{ $discharge->discharge_date }}</td>
                         <td>{{ $discharge->cnic }}</td>
                         <td>{{ $discharge->admission_date }}</td>
-                        <td>{{ $discharge->user_district }}</td>
+                        <td>{{ $discharge->district }}</td>
                         <td>
                           <span class="badge badge-pending">Pending</span>
                         </td>
                         <td>
                           <div class="d-flex gap-1 justify-content-center">
-                            <a href="/hwhadmissions/create?discharge_id={{ $discharge->id }}&name={{ $discharge->resident_name }}&cnic={{ $discharge->cnic }}" 
+                            <!-- ✅ FIXED: Link to discharge form with correct parameter -->
+                            <a href="{{ route('hwhadmissions.discharges.create', $discharge->id) }}" 
                                class="btn-process" 
-                               title="Register Discharge through HWH System">
-                              <i class="fas fa-user-plus"></i> Register
+                               title="Process Discharge through HWH System">
+                              <i class="fas fa-sign-out-alt"></i> Process Discharge
                             </a>
                             
-                            <!-- CORRECTED ROUTE -->
+                            <!-- Delete Form -->
                             <form action="{{ route('deo.discharge.destroy', $discharge->id) }}" method="POST" style="display: inline;">
                               @csrf
                               @method('DELETE')
@@ -251,12 +246,13 @@
                   </table>
                 </div>
               </form>
-              @else
-              <div class="text-center py-4">
-                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                <h5 class="text-muted">No Pending Discharges</h5>
-                <p class="text-muted">There are no pending discharges at the moment.</p>
-              </div>
+              
+              @if($pendingDischarges->isEmpty())
+                <div class="text-center py-5">
+                  <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                  <h4 class="text-success">No Pending Discharges</h4>
+                  <p class="text-muted">All discharges have been processed or no pending discharges found.</p>
+                </div>
               @endif
             </div>
           </div>
@@ -269,9 +265,9 @@
         <div class="row" style="background-color: white">
           <div class="col-sm-0 col-md-4" style="text-align: center;"></div>
           <div class="col-sm-12 col-md-4" style="text-align: center;">
-            <img style="width: 50px" src="{{ asset('assets/img/PITBLOGO.png') }}" />
+            <img style="width: 50px" src="http://127.0.0.1:8000/assets/img/PITBLOGO.png" />
             <small><b>A project of Government of the Punjab</b></small>
-            <img style="width: 60px" src="{{ asset('assets/img/swd.png') }}" />
+            <img style="width: 60px" src="http://127.0.0.1:8000/assets/img/swd.png" />
           </div>
           <div class="col-sm-0 col-md-4" style="text-align: center;"></div>
         </div>
@@ -281,8 +277,8 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="{{ asset('admin/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
-  <script src="{{ asset('admin/js/ruang-admin.min.js') }}"></script>
+  <script src="http://127.0.0.1:8000/admin/vendor/jquery-easing/jquery.easing.min.js"></script>
+  <script src="http://127.0.0.1:8000/admin/js/ruang-admin.min.js"></script>
 
   <script>
     // Auto-dismiss alerts after 5 seconds

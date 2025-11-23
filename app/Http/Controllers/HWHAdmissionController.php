@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 
-class HWHAdmissionController extends Controller
+class HwhAdmissionController extends Controller
 {
     /**
      * Format CNIC for display (add hyphens)
@@ -23,7 +23,6 @@ class HWHAdmissionController extends Controller
             return $cnic;
         }
         
-        // Convert "1234567890123" to "12345-6789012-3"
         return substr($cnic, 0, 5) . '-' . substr($cnic, 5, 7) . '-' . substr($cnic, 12, 1);
     }
 
@@ -36,7 +35,6 @@ class HWHAdmissionController extends Controller
             return $cnic;
         }
         
-        // Remove any hyphens, spaces, or other non-digit characters
         return preg_replace('/[^0-9]/', '', $cnic);
     }
 
@@ -47,7 +45,6 @@ class HWHAdmissionController extends Controller
     {
         $query = HWHAdmission::query();
         
-        // Format search CNIC for storage before querying
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
             $searchCnic = $this->formatCnicForStorage($search);
@@ -60,7 +57,6 @@ class HWHAdmissionController extends Controller
             });
         }
         
-        // Status filtering
         if ($request->has('status') && $request->status == 'discharged') {
             $query->where('status', 'discharged');
         } elseif ($request->has('status') && $request->status == 'active') {
@@ -77,7 +73,6 @@ class HWHAdmissionController extends Controller
      */
     public function create(Request $request)
     {
-        // Pre-fill data if coming from incharge list
         $prefillData = [];
         
         if ($request->has('incharge_id')) {
@@ -101,35 +96,40 @@ class HWHAdmissionController extends Controller
      */
     public function store(Request $request)
     {
-        \Log::info('Form submission started', ['data' => $request->except(['_token', 'files'])]);
+        \Log::info('=== FORM SUBMISSION STARTED ===');
+        \Log::info('All request data:', $request->all());
 
-        // Format CNIC for storage before validation
-        if ($request->has('cnic') && $request->cnic) {
-            $request->merge([
-                'cnic' => $this->formatCnicForStorage($request->cnic)
-            ]);
-        }
+        // DEBUG: Log all incoming data
+        \Log::info('Files received:', $request->allFiles());
+        \Log::info('Children data:', $request->children ?? []);
 
-        // Validate the main form data
+        // STEP 1: First validate with original CNIC format
         $validator = Validator::make($request->all(), [
+            // Personal Information
             'patient_name' => 'required|string|max:255',
             'father_name' => 'required|string|max:255',
             'age' => 'required|integer|min:1|max:120',
             'gender' => 'required|in:male,female,other',
-            'cnic' => 'required|regex:/^\d{13}$/|unique:hwh_admissions,cnic',
+            'cnic' => 'required|string|max:20', // Temporary larger size for formatted CNIC
             'phone' => 'required|string|max:15',
             'education' => 'nullable|string|max:255',
             'address' => 'required|string',
+            
+            // Family Information
             'marital_status' => 'required|in:Single,Married,Widowed,Divorced',
             'spouse_name' => 'nullable|string|max:255',
             'children_count' => 'nullable|integer|min:0',
             'boys_count' => 'nullable|integer|min:0',
             'girls_count' => 'nullable|integer|min:0',
             'religion' => 'nullable|string|max:255',
+            
+            // Guardian Information
             'guardian_name' => 'required|string|max:255',
             'guardian_contact' => 'required|string|max:15',
             'relationship' => 'required|string|max:255',
             'guardian_address' => 'required|string',
+            
+            // Medical Information
             'admission_date' => 'required|date',
             'reason' => 'nullable|string',
             'disease_name' => 'required|string|max:255',
@@ -137,7 +137,7 @@ class HWHAdmissionController extends Controller
             'case_history' => 'required|string',
             'other_diseases' => 'nullable|string',
             
-            // File validations
+            // File Validations - REQUIRED
             'id_card_front' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'id_card_back' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'passport_photos' => 'required|array|min:1',
@@ -149,40 +149,91 @@ class HWHAdmissionController extends Controller
             'additional_documents' => 'nullable|array',
             'additional_documents.*' => 'file|mimes:pdf,jpg,jpeg,png|max:5120',
             
-            // Children validation
-            'children' => 'sometimes|array',
+            // Children Data
+            'children' => 'nullable|array',
             'children.*.name' => 'required_with:children|string|max:255',
             'children.*.gender' => 'required_with:children|in:male,female',
             'children.*.age' => 'nullable|integer|min:0|max:25',
-            'children.*.education' => 'nullable|string|max:255',
         ], [
-            'id_card_front.required' => 'ID Card Front is required',
-            'id_card_back.required' => 'ID Card Back is required',
-            'passport_photos.required' => 'Passport photos are required',
-            'passport_photos.min' => 'At least one passport photo is required',
-            'medical_reports.required' => 'Medical reports are required',
-            'medical_reports.min' => 'At least one medical report is required',
+            'cnic.unique' => 'This CNIC is already registered in the system.',
+            'id_card_front.required' => 'ID Card Front copy is required',
+            'id_card_back.required' => 'ID Card Back copy is required',
+            'passport_photos.required' => 'At least one passport photo is required',
+            'medical_reports.required' => 'At least one medical report is required',
             'referral_form.required' => 'Referral form is required',
-            'cnic.regex' => 'CNIC must be 13 digits without hyphens',
-            'cnic.unique' => 'This CNIC is already registered',
+            'children.*.name.required_with' => 'Child name is required',
+            'children.*.gender.required_with' => 'Child gender is required',
         ]);
 
         if ($validator->fails()) {
-            \Log::error('Validation failed', ['errors' => $validator->errors()->toArray()]);
+            \Log::error('VALIDATION FAILED:', $validator->errors()->toArray());
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput()
                 ->with('error', 'Please fix the validation errors below.');
         }
 
+        \Log::info('Validation passed, formatting CNIC...');
+
+        // STEP 2: Format CNIC for storage and check uniqueness
+        $originalCnic = $request->cnic;
+        $formattedCnic = $this->formatCnicForStorage($request->cnic);
+        
+        // Check if CNIC is already registered (with formatted CNIC)
+        $existingRecord = HWHAdmission::where('cnic', $formattedCnic)->first();
+        if ($existingRecord) {
+            \Log::error('CNIC already exists: ' . $formattedCnic);
+            return redirect()->back()
+                ->withErrors(['cnic' => 'This CNIC is already registered in the system.'])
+                ->withInput()
+                ->with('error', 'This CNIC is already registered.');
+        }
+
+        $request->merge(['cnic' => $formattedCnic]);
+        \Log::info('CNIC formatted: ' . $originalCnic . ' -> ' . $formattedCnic);
+
         DB::beginTransaction();
 
         try {
-            $filePaths = [];
+            // Prepare basic admission data
+            $admissionData = [
+                'patient_name' => $request->patient_name,
+                'father_name' => $request->father_name,
+                'age' => $request->age,
+                'gender' => $request->gender,
+                'cnic' => $formattedCnic,
+                'phone' => $request->phone,
+                'education' => $request->education,
+                'address' => $request->address,
+                'marital_status' => $request->marital_status,
+                'spouse_name' => $request->spouse_name,
+                'children_count' => $request->children_count ?? 0,
+                'boys_count' => $request->boys_count ?? 0,
+                'girls_count' => $request->girls_count ?? 0,
+                'religion' => $request->religion,
+                'guardian_name' => $request->guardian_name,
+                'guardian_contact' => $request->guardian_contact,
+                'relationship' => $request->relationship,
+                'guardian_address' => $request->guardian_address,
+                'admission_date' => $request->admission_date,
+                'reason' => $request->reason,
+                'disease_name' => $request->disease_name,
+                'treatment_details' => $request->treatment_details,
+                'case_history' => $request->case_history,
+                'other_diseases' => $request->other_diseases,
+                'incharge_id' => $request->incharge_id,
+                'status' => 'active',
+                'reference_id' => 'HWH-' . date('Ymd') . '-' . strtoupper(Str::random(6)),
+            ];
 
-            // Handle single file uploads
+            \Log::info('Admission data prepared:', $admissionData);
+
+            // Handle file uploads
+            $filePaths = [];
+            
+            // Single file uploads
             $singleFileFields = [
-                'id_card_front',
+                'id_card_front', 
                 'id_card_back', 
                 'referral_form', 
                 'affidavit'
@@ -194,17 +245,13 @@ class HWHAdmissionController extends Controller
                     $fileName = time() . '_' . $field . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                     $filePath = $file->storeAs('admissions/' . date('Y/m'), $fileName, 'public');
                     $filePaths[$field] = $filePath;
-                    \Log::info("File uploaded: {$field}", ['path' => $filePath]);
-                } else {
-                    if (in_array($field, ['id_card_front', 'id_card_back', 'referral_form'])) {
-                        throw new \Exception("File upload failed for: {$field}. Please check the file and try again.");
-                    }
+                    \Log::info("File uploaded: {$field} -> {$filePath}");
                 }
             }
 
-            // Handle multiple file uploads
+            // Multiple file uploads
             $multipleFileFields = [
-                'passport_photos',
+                'passport_photos', 
                 'medical_reports', 
                 'additional_documents'
             ];
@@ -217,85 +264,27 @@ class HWHAdmissionController extends Controller
                             $fileName = time() . '_' . $field . '_' . $index . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                             $filePath = $file->storeAs('admissions/' . date('Y/m'), $fileName, 'public');
                             $uploadedFiles[] = $filePath;
-                            \Log::info("Multiple file uploaded: {$field}_{$index}", ['path' => $filePath]);
-                        } else {
-                            throw new \Exception("File upload failed for {$field} at index {$index}");
+                            \Log::info("Multiple file uploaded: {$field}[{$index}] -> {$filePath}");
                         }
                     }
                     if (!empty($uploadedFiles)) {
                         $filePaths[$field] = json_encode($uploadedFiles);
                     }
-                } elseif (in_array($field, ['passport_photos', 'medical_reports'])) {
-                    throw new \Exception("Required files missing for: {$field}");
                 }
             }
 
-            // Prepare admission data
-            $admissionData = $request->except([
-                'children', 
-                '_token', 
-                'passport_photos', 
-                'medical_reports', 
-                'additional_documents',
-                'id_card_front',
-                'id_card_back', 
-                'referral_form', 
-                'affidavit'
-            ]);
-            
-            // Format admission date to remove time
-            if ($request->has('admission_date') && $request->admission_date) {
-                $admissionData['admission_date'] = Carbon::parse($request->admission_date)->format('Y-m-d');
-            }
-            
-            // Set default values for nullable fields
-            $nullableFields = [
-                'children_count' => 0,
-                'boys_count' => 0,
-                'girls_count' => 0,
-                'spouse_name' => null,
-                'education' => null,
-                'religion' => null,
-                'reason' => null,
-                'other_diseases' => null,
-                'incharge_id' => null,
-            ];
-            
-            foreach ($nullableFields as $field => $defaultValue) {
-                if (empty($admissionData[$field])) {
-                    $admissionData[$field] = $defaultValue;
-                }
-            }
-            
-            // Set default status
-            $admissionData['status'] = 'active';
-            
-            // Generate reference ID
-            $admissionData['reference_id'] = 'HWH-' . date('Ymd') . '-' . strtoupper(Str::random(6));
-            
+            // Merge file paths with admission data
             $admissionData = array_merge($admissionData, $filePaths);
+            \Log::info('Final admission data with files:', $admissionData);
 
-            \Log::info('Creating admission record', ['data' => array_keys($admissionData)]);
-
-            // Create the admission record
+            // CREATE THE ADMISSION RECORD
             $admission = HWHAdmission::create($admissionData);
+            \Log::info('Admission record created successfully. ID: ' . $admission->id);
 
-            \Log::info('Admission record created', ['id' => $admission->id]);
-
-            // AUTO-REMOVAL: Remove from incharge list if coming from there
-            if ($request->has('incharge_id') && $request->incharge_id) {
-                $incharge = Incharge::find($request->incharge_id);
-                if ($incharge) {
-                    $incharge->delete();
-                    \Log::info('Auto-removed from incharge list', ['incharge_id' => $request->incharge_id]);
-                }
-            }
-
-            // Save children information if exists
+            // Handle children data
             if ($request->has('children') && is_array($request->children)) {
                 $childrenCreated = 0;
                 foreach ($request->children as $childData) {
-                    // Only create child record if we have valid data
                     if (!empty($childData['name']) && !empty($childData['gender'])) {
                         Child::create([
                             'hwh_admission_id' => $admission->id,
@@ -305,55 +294,70 @@ class HWHAdmissionController extends Controller
                             'education' => $childData['education'] ?? null,
                         ]);
                         $childrenCreated++;
+                        \Log::info("Child created: {$childData['name']}");
                     }
                 }
-                \Log::info("Children records created", ['count' => $childrenCreated]);
+                \Log::info("Total children records created: {$childrenCreated}");
+            }
+
+            // Remove from incharge list if applicable
+            if ($request->has('incharge_id') && $request->incharge_id) {
+                $incharge = Incharge::find($request->incharge_id);
+                if ($incharge) {
+                    $incharge->delete();
+                    \Log::info('Removed from incharge list. Incharge ID: ' . $request->incharge_id);
+                }
             }
 
             DB::commit();
-
-            \Log::info('Admission successfully created', ['id' => $admission->id]);
+            \Log::info('=== TRANSACTION COMMITTED SUCCESSFULLY ===');
+            \Log::info('Admission created with Reference ID: ' . $admission->reference_id);
 
             return redirect()->route('hwhadmissions.index')
-                ->with('success', 'Admission created successfully! Reference ID: ' . $admission->reference_id);
+                ->with('success', 'Admission created successfully! Reference ID: ' . $admission->reference_id)
+                ->with('reference_id', $admission->reference_id);
 
         } catch (\Exception $e) {
             DB::rollBack();
             
-            \Log::error('Admission creation failed', [
+            \Log::error('ADMISSION CREATION FAILED:', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
-                'file_paths' => $filePaths ?? []
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
             ]);
 
-            // Delete any uploaded files if transaction fails
-            if (isset($filePaths)) {
+            // Clean up uploaded files if any
+            if (isset($filePaths) && !empty($filePaths)) {
                 foreach ($filePaths as $filePath) {
                     try {
                         if (is_string($filePath)) {
-                            // Check if it's JSON encoded array or single file path
+                            // Check if it's JSON encoded array
                             if (str_starts_with($filePath, '[')) {
                                 $files = json_decode($filePath, true);
                                 if (is_array($files)) {
                                     foreach ($files as $singlePath) {
-                                        Storage::disk('public')->delete($singlePath);
+                                        if (Storage::disk('public')->exists($singlePath)) {
+                                            Storage::disk('public')->delete($singlePath);
+                                        }
                                     }
                                 }
                             } else {
-                                Storage::disk('public')->delete($filePath);
+                                // Single file path
+                                if (Storage::disk('public')->exists($filePath)) {
+                                    Storage::disk('public')->delete($filePath);
+                                }
                             }
                         }
                     } catch (\Exception $fileException) {
-                        \Log::error('Failed to delete file during rollback', [
-                            'file_path' => $filePath,
-                            'error' => $fileException->getMessage()
-                        ]);
+                        \Log::error('File cleanup failed: ' . $fileException->getMessage());
                     }
                 }
             }
 
-            return back()->with('error', 'Failed to create admission: ' . $e->getMessage())
-                        ->withInput();
+            return back()
+                ->with('error', 'Failed to create admission: ' . $e->getMessage())
+                ->withInput();
         }
     }
 
@@ -382,7 +386,7 @@ class HWHAdmissionController extends Controller
     {
         $admission = HWHAdmission::findOrFail($id);
         
-        // Format CNIC for storage before validation
+        // Format CNIC for storage
         if ($request->has('cnic') && $request->cnic) {
             $request->merge([
                 'cnic' => $this->formatCnicForStorage($request->cnic)
@@ -394,26 +398,18 @@ class HWHAdmissionController extends Controller
             'father_name' => 'required|string|max:255',
             'age' => 'required|integer|min:1|max:120',
             'gender' => 'required|in:male,female,other',
-            'cnic' => 'required|regex:/^\d{13}$/|unique:hwh_admissions,cnic,' . $admission->id,
+            'cnic' => 'required|string|max:15|unique:hwh_admissions,cnic,' . $admission->id,
             'phone' => 'required|string|max:15',
-            'education' => 'nullable|string|max:255',
             'address' => 'required|string',
             'marital_status' => 'required|in:Single,Married,Widowed,Divorced',
-            'spouse_name' => 'nullable|string|max:255',
-            'children_count' => 'nullable|integer|min:0',
-            'boys_count' => 'nullable|integer|min:0',
-            'girls_count' => 'nullable|integer|min:0',
-            'religion' => 'nullable|string|max:255',
             'guardian_name' => 'required|string|max:255',
             'guardian_contact' => 'required|string|max:15',
             'relationship' => 'required|string|max:255',
             'guardian_address' => 'required|string',
             'admission_date' => 'required|date',
-            'reason' => 'nullable|string',
             'disease_name' => 'required|string|max:255',
             'treatment_details' => 'required|string',
             'case_history' => 'required|string',
-            'other_diseases' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -426,23 +422,19 @@ class HWHAdmissionController extends Controller
         DB::beginTransaction();
 
         try {
-            $updateData = $request->except(['_token', '_method']);
+            $updateData = $request->except(['_token', '_method', 'children']);
             
-            // Format admission date
-            if ($request->has('admission_date') && $request->admission_date) {
-                $updateData['admission_date'] = Carbon::parse($request->admission_date)->format('Y-m-d');
-            }
+            $updateData['admission_date'] = Carbon::parse($request->admission_date)->format('Y-m-d');
 
-            // Handle file updates if provided
+            // Handle file updates
             $fileFields = ['id_card_front', 'id_card_back', 'referral_form', 'affidavit'];
             foreach ($fileFields as $field) {
                 if ($request->hasFile($field) && $request->file($field)->isValid()) {
-                    // Delete old file
+                    // Delete old file if exists
                     if ($admission->$field) {
                         Storage::disk('public')->delete($admission->$field);
                     }
                     
-                    // Upload new file
                     $file = $request->file($field);
                     $fileName = time() . '_' . $field . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                     $filePath = $file->storeAs('admissions/' . date('Y/m'), $fileName, 'public');
@@ -454,7 +446,7 @@ class HWHAdmissionController extends Controller
             $multipleFileFields = ['passport_photos', 'medical_reports', 'additional_documents'];
             foreach ($multipleFileFields as $field) {
                 if ($request->hasFile($field)) {
-                    // Delete old files
+                    // Delete old files if exist
                     if ($admission->$field) {
                         $oldFiles = json_decode($admission->$field, true);
                         if (is_array($oldFiles)) {
@@ -464,7 +456,6 @@ class HWHAdmissionController extends Controller
                         }
                     }
                     
-                    // Upload new files
                     $uploadedFiles = [];
                     foreach ($request->file($field) as $index => $file) {
                         if ($file->isValid()) {
@@ -477,10 +468,9 @@ class HWHAdmissionController extends Controller
                 }
             }
 
-            // Update admission
             $admission->update($updateData);
 
-            // Update children if provided
+            // Update children data
             if ($request->has('children') && is_array($request->children)) {
                 // Delete existing children
                 Child::where('hwh_admission_id', $admission->id)->delete();
@@ -507,10 +497,7 @@ class HWHAdmissionController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             
-            \Log::error('Admission update failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
+            \Log::error('Admission update failed: ' . $e->getMessage());
 
             return back()->with('error', 'Failed to update admission: ' . $e->getMessage())
                         ->withInput();
@@ -526,10 +513,10 @@ class HWHAdmissionController extends Controller
         
         DB::beginTransaction();
         try {
-            // Delete children first
+            // Delete children records
             Child::where('hwh_admission_id', $id)->delete();
             
-            // Delete files
+            // Delete single files
             $fileFields = ['id_card_front', 'id_card_back', 'referral_form', 'affidavit'];
             foreach ($fileFields as $field) {
                 if ($admission->$field) {
@@ -537,6 +524,7 @@ class HWHAdmissionController extends Controller
                 }
             }
             
+            // Delete multiple files
             $arrayFields = ['passport_photos', 'medical_reports', 'additional_documents'];
             foreach ($arrayFields as $field) {
                 if ($admission->$field) {
@@ -549,7 +537,6 @@ class HWHAdmissionController extends Controller
                 }
             }
             
-            // Delete admission
             $admission->delete();
             
             DB::commit();
@@ -559,13 +546,13 @@ class HWHAdmissionController extends Controller
                 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Admission deletion failed', ['error' => $e->getMessage()]);
+            \Log::error('Admission deletion failed: ' . $e->getMessage());
             return back()->with('error', 'Failed to delete admission: ' . $e->getMessage());
         }
     }
 
     /**
-     * CNIC Search for auto-fill - FIXED VERSION
+     * CNIC Search for auto-fill
      */
     public function searchByCnic(Request $request)
     {
@@ -573,56 +560,19 @@ class HWHAdmissionController extends Controller
             $cnic = $request->query('cnic');
             
             if (!$cnic) {
-                \Log::error('CNIC search: No CNIC provided');
                 return response()->json([
                     'exists' => false,
                     'message' => 'CNIC is required'
                 ], 400);
             }
 
-            // Format the search CNIC for storage (remove hyphens)
             $searchCnic = $this->formatCnicForStorage($cnic);
             
-            \Log::info('CNIC Search Debug', [
-                'original_cnic' => $cnic,
-                'formatted_cnic' => $searchCnic,
-                'cnic_length' => strlen($searchCnic)
-            ]);
-
-            // Check if CNIC is exactly 13 digits
-            if (strlen($searchCnic) !== 13) {
-                \Log::error('CNIC search: Invalid CNIC length', ['length' => strlen($searchCnic)]);
-                return response()->json([
-                    'exists' => false,
-                    'message' => 'Invalid CNIC format. Must be 13 digits.'
-                ], 400);
-            }
-
-            // DEBUG: Check what's in the database
-            $allCnicInDb = HWHAdmission::pluck('cnic')->toArray();
-            \Log::info('All CNIC in database', $allCnicInDb);
-
-            // Check in hwh_admissions table - FIXED QUERY
             $record = HWHAdmission::with('children')
                 ->where('cnic', $searchCnic)
                 ->first();
 
-            // If not found with exact match, try with like as fallback
-            if (!$record) {
-                \Log::info('Trying fallback search with LIKE', ['search_cnic' => $searchCnic]);
-                $record = HWHAdmission::with('children')
-                    ->where('cnic', 'like', '%' . $searchCnic . '%')
-                    ->first();
-            }
-
             if ($record) {
-                \Log::info('Record found successfully', [
-                    'id' => $record->id,
-                    'patient_name' => $record->patient_name,
-                    'db_cnic' => $record->cnic,
-                    'search_cnic' => $searchCnic
-                ]);
-                
                 return response()->json([
                     'exists' => true,
                     'message' => 'Record found in database',
@@ -630,11 +580,6 @@ class HWHAdmissionController extends Controller
                     'source' => 'permanent'
                 ]);
             }
-
-            \Log::info('No record found for CNIC', [
-                'search_cnic' => $searchCnic,
-                'all_db_cnic' => $allCnicInDb
-            ]);
             
             return response()->json([
                 'exists' => false,
@@ -642,11 +587,7 @@ class HWHAdmissionController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('CNIC Search Error', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'input_cnic' => $request->query('cnic')
-            ]);
+            \Log::error('CNIC Search Error: ' . $e->getMessage());
             
             return response()->json([
                 'exists' => false,
@@ -656,7 +597,7 @@ class HWHAdmissionController extends Controller
     }
 
     /**
-     * Format admission data for auto-fill - IMPROVED VERSION
+     * Format admission data for auto-fill
      */
     private function formatAdmissionData($record)
     {
@@ -687,7 +628,7 @@ class HWHAdmissionController extends Controller
             'other_diseases' => $record->other_diseases ?? '',
         ];
 
-        // Include children data if exists
+        // Add children data
         if ($record->children && $record->children->count() > 0) {
             $data['children'] = $record->children->map(function($child) {
                 return [
@@ -701,67 +642,6 @@ class HWHAdmissionController extends Controller
             $data['children'] = [];
         }
 
-        // Include attachment information for existing records
-        $attachmentFields = ['id_card_front', 'id_card_back', 'passport_photos', 'medical_reports', 'referral_form', 'affidavit', 'additional_documents'];
-        foreach ($attachmentFields as $field) {
-            if ($record->$field) {
-                $data[$field] = $record->$field;
-                
-                // Create preview data for attachments
-                if (in_array($field, ['passport_photos', 'medical_reports', 'additional_documents'])) {
-                    $files = json_decode($record->$field, true);
-                    if (is_array($files)) {
-                        $data[$field . '_count'] = count($files);
-                        $data[$field . '_previews'] = array_map(function($filePath) {
-                            return [
-                                'url' => Storage::disk('public')->url($filePath),
-                                'name' => basename($filePath)
-                            ];
-                        }, $files);
-                    }
-                } else {
-                    $data[$field . '_preview'] = [
-                        'url' => Storage::disk('public')->url($record->$field),
-                        'name' => basename($record->$field)
-                    ];
-                }
-            }
-        }
-
         return $data;
-    }
-
-    /**
-     * Show attachment file
-     */
-    public function showAttachment($id, $field)
-    {
-        $admission = HWHAdmission::findOrFail($id);
-        
-        if (!in_array($field, ['id_card_front', 'id_card_back', 'referral_form', 'affidavit', 'passport_photos', 'medical_reports', 'additional_documents'])) {
-            abort(404);
-        }
-
-        $filePath = $admission->$field;
-        
-        if (!$filePath) {
-            abort(404);
-        }
-
-        if (in_array($field, ['passport_photos', 'medical_reports', 'additional_documents'])) {
-            // For array fields, take the first file
-            $files = json_decode($filePath, true);
-            if (is_array($files) && count($files) > 0) {
-                $filePath = $files[0];
-            } else {
-                abort(404);
-            }
-        }
-
-        if (!Storage::disk('public')->exists($filePath)) {
-            abort(404);
-        }
-
-        return response()->file(Storage::disk('public')->path($filePath));
     }
 }
