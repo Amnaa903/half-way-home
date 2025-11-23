@@ -137,7 +137,7 @@ class HwhAdmissionController extends Controller
             'case_history' => 'required|string',
             'other_diseases' => 'nullable|string',
             
-            // File Validations - REQUIRED
+            // File Validations - MORE FLEXIBLE
             'id_card_front' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'id_card_back' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'passport_photos' => 'required|array|min:1',
@@ -246,6 +246,8 @@ class HwhAdmissionController extends Controller
                     $filePath = $file->storeAs('admissions/' . date('Y/m'), $fileName, 'public');
                     $filePaths[$field] = $filePath;
                     \Log::info("File uploaded: {$field} -> {$filePath}");
+                } else {
+                    \Log::warning("File upload failed or not provided for: {$field}");
                 }
             }
 
@@ -265,11 +267,25 @@ class HwhAdmissionController extends Controller
                             $filePath = $file->storeAs('admissions/' . date('Y/m'), $fileName, 'public');
                             $uploadedFiles[] = $filePath;
                             \Log::info("Multiple file uploaded: {$field}[{$index}] -> {$filePath}");
+                        } else {
+                            \Log::warning("Multiple file upload failed for: {$field}[{$index}]");
                         }
                     }
                     if (!empty($uploadedFiles)) {
                         $filePaths[$field] = json_encode($uploadedFiles);
+                    } else {
+                        \Log::warning("No valid files uploaded for: {$field}");
                     }
+                } else {
+                    \Log::warning("No files provided for: {$field}");
+                }
+            }
+
+            // Check if required files are present
+            $requiredFiles = ['id_card_front', 'id_card_back', 'passport_photos', 'medical_reports', 'referral_form'];
+            foreach ($requiredFiles as $requiredFile) {
+                if (!isset($filePaths[$requiredFile])) {
+                    throw new \Exception("Required file {$requiredFile} is missing or invalid.");
                 }
             }
 

@@ -705,17 +705,7 @@
                             </div>
 
                             <!-- Success Message Display -->
-                            @if(session('success'))
-                            <div class="success-message" id="successMessage">
-                                <i class="fas fa-check-circle"></i> 
-                                <span id="successText">{{ session('success') }}</span>
-                                @if(session('reference_id'))
-                                <div class="reference-id" id="referenceId">{{ session('reference_id') }}</div>
-                                @endif
-                                <p class="mb-0 mt-2"><small>Your data has been saved successfully. Please keep your reference ID for future correspondence.</small></p>
-                            </div>
-                            @endif
-
+                            
                             <!-- Error Alert -->
                             <div class="error-alert" style="display: none;" id="errorAlert">
                                 <h6 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> Please fix the following errors:</h6>
@@ -723,25 +713,16 @@
                             </div>
 
                             <!-- Validation Errors -->
-                            @if($errors->any())
-                            <div class="error-alert" id="serverErrorAlert">
-                                <h6 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> Please fix the following errors:</h6>
-                                <ul class="mb-0">
-                                    @foreach($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                            @endif
-
+                            
+                            <!-- UPDATED FORM WITH CSRF TOKEN FIX -->
                             <form class="registration-form" id="medicalRegistrationForm" action="{{ route('hwhadmissions.store') }}" method="POST" enctype="multipart/form-data" novalidate>
                                 @csrf
                                 
                                 <!-- Hidden field for incharge_id if pre-filled -->
                                 @if(isset($prefillData['incharge_id']))
-                                <input type="hidden" name="incharge_id" value="{{ $prefillData['incharge_id'] }}">
+                                    <input type="hidden" name="incharge_id" value="{{ $prefillData['incharge_id'] }}">
                                 @endif
-
+                                
                                 <!-- Step 1: Personal Information -->
                                 <div class="form-step active" id="step-1">
                                     <h3 class="form-section-title">
@@ -755,30 +736,24 @@
                                                 <span>Patient Name</span>
                                                 <span class="urdu-label jameel-noori">مریض کا نام</span>
                                             </label>
-                                            <input type="text" class="form-control @error('patient_name') is-invalid @enderror" 
+                                            <input type="text" class="form-control " 
                                                    id="patient_name" name="patient_name" 
-                                                   value="{{ old('patient_name', $prefillData['patient_name'] ?? '') }}" 
+                                                   value="{{ $prefillData['patient_name'] ?? '' }}" 
                                                    required maxlength="255">
                                             <div class="validation-msg" id="patient_name_msg"></div>
-                                            @error('patient_name')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
+                                                                                    </div>
                                         
                                         <div class="col-md-6 mb-3">
                                             <label for="father_name" class="form-label required">
                                                 <span>Father's Name</span>
                                                 <span class="urdu-label jameel-noori">والد کا نام</span>
                                             </label>
-                                            <input type="text" class="form-control @error('father_name') is-invalid @enderror" 
+                                            <input type="text" class="form-control " 
                                                    id="father_name" name="father_name" 
-                                                   value="{{ old('father_name', $prefillData['father_name'] ?? '') }}" 
+                                                   value="{{ $prefillData['father_name'] ?? '' }}" 
                                                    required maxlength="255">
                                             <div class="validation-msg" id="father_name_msg"></div>
-                                            @error('father_name')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
+                                                                                    </div>
                                     </div>
 
                                     <div class="row">
@@ -787,46 +762,395 @@
                                                 <span>Age</span>
                                                 <span class="urdu-label jameel-noori">عمر</span>
                                             </label>
-                                            <select class="form-select @error('age') is-invalid @enderror" 
+                                            <select class="form-select " 
                                                    id="age" name="age" required>
                                                 <option value="">Select Age</option>
-                                                @for ($i = 1; $i <= 120; $i++)
-                                                    <option value="{{ $i }}" {{ old('age') == $i ? 'selected' : '' }}>
-                                                        {{ $i }} years
+                                                                                                    <option value="1" >
+                                                        1 years
                                                     </option>
-                                                @endfor
-                                            </select>
+                                                                                                    <option value="2" >
+                                                        2 years
+                                                    </option>
+                                                                                                    <option value="3" >
+                                                        3 years
+                                                    </option>
+                                                                                                    <option value="4" >
+                                                        4 years
+                                                    </option>
+                                                                                                    <option value="5" >
+                                                        5 years
+                                                    </option>
+                                                                                                    <option value="6" >
+                                                        6 years
+                                                    </option>
+                                                                                                    <option value="7" >
+                                                        7 years
+                                                    </option>
+                                                                                                    <option value="8" >
+                                                        8 years
+                                                    </option>
+                                                                                                    <option value="9" >
+                                                        9 years
+                                                    </option>
+                                                                                                    <option value="10" >
+                                                        10 years
+                                                    </option>
+                                                                                                    <option value="11" >
+                                                        11 years
+                                                    </option>
+                                                                                                    <option value="12" >
+                                                        12 years
+                                                    </option>
+                                                                                                    <option value="13" >
+                                                        13 years
+                                                    </option>
+                                                                                                    <option value="14" >
+                                                        14 years
+                                                    </option>
+                                                                                                    <option value="15" >
+                                                        15 years
+                                                    </option>
+                                                                                                    <option value="16" >
+                                                        16 years
+                                                    </option>
+                                                                                                    <option value="17" >
+                                                        17 years
+                                                    </option>
+                                                                                                    <option value="18" >
+                                                        18 years
+                                                    </option>
+                                                                                                    <option value="19" >
+                                                        19 years
+                                                    </option>
+                                                                                                    <option value="20" >
+                                                        20 years
+                                                    </option>
+                                                                                                    <option value="21" >
+                                                        21 years
+                                                    </option>
+                                                                                                    <option value="22" >
+                                                        22 years
+                                                    </option>
+                                                                                                    <option value="23" >
+                                                        23 years
+                                                    </option>
+                                                                                                    <option value="24" >
+                                                        24 years
+                                                    </option>
+                                                                                                    <option value="25" >
+                                                        25 years
+                                                    </option>
+                                                                                                    <option value="26" >
+                                                        26 years
+                                                    </option>
+                                                                                                    <option value="27" >
+                                                        27 years
+                                                    </option>
+                                                                                                    <option value="28" >
+                                                        28 years
+                                                    </option>
+                                                                                                    <option value="29" >
+                                                        29 years
+                                                    </option>
+                                                                                                    <option value="30" >
+                                                        30 years
+                                                    </option>
+                                                                                                    <option value="31" >
+                                                        31 years
+                                                    </option>
+                                                                                                    <option value="32" >
+                                                        32 years
+                                                    </option>
+                                                                                                    <option value="33" >
+                                                        33 years
+                                                    </option>
+                                                                                                    <option value="34" >
+                                                        34 years
+                                                    </option>
+                                                                                                    <option value="35" >
+                                                        35 years
+                                                    </option>
+                                                                                                    <option value="36" >
+                                                        36 years
+                                                    </option>
+                                                                                                    <option value="37" >
+                                                        37 years
+                                                    </option>
+                                                                                                    <option value="38" >
+                                                        38 years
+                                                    </option>
+                                                                                                    <option value="39" >
+                                                        39 years
+                                                    </option>
+                                                                                                    <option value="40" >
+                                                        40 years
+                                                    </option>
+                                                                                                    <option value="41" >
+                                                        41 years
+                                                    </option>
+                                                                                                    <option value="42" >
+                                                        42 years
+                                                    </option>
+                                                                                                    <option value="43" >
+                                                        43 years
+                                                    </option>
+                                                                                                    <option value="44" >
+                                                        44 years
+                                                    </option>
+                                                                                                    <option value="45" >
+                                                        45 years
+                                                    </option>
+                                                                                                    <option value="46" >
+                                                        46 years
+                                                    </option>
+                                                                                                    <option value="47" >
+                                                        47 years
+                                                    </option>
+                                                                                                    <option value="48" >
+                                                        48 years
+                                                    </option>
+                                                                                                    <option value="49" >
+                                                        49 years
+                                                    </option>
+                                                                                                    <option value="50" >
+                                                        50 years
+                                                    </option>
+                                                                                                    <option value="51" >
+                                                        51 years
+                                                    </option>
+                                                                                                    <option value="52" >
+                                                        52 years
+                                                    </option>
+                                                                                                    <option value="53" >
+                                                        53 years
+                                                    </option>
+                                                                                                    <option value="54" >
+                                                        54 years
+                                                    </option>
+                                                                                                    <option value="55" >
+                                                        55 years
+                                                    </option>
+                                                                                                    <option value="56" >
+                                                        56 years
+                                                    </option>
+                                                                                                    <option value="57" >
+                                                        57 years
+                                                    </option>
+                                                                                                    <option value="58" >
+                                                        58 years
+                                                    </option>
+                                                                                                    <option value="59" >
+                                                        59 years
+                                                    </option>
+                                                                                                    <option value="60" >
+                                                        60 years
+                                                    </option>
+                                                                                                    <option value="61" >
+                                                        61 years
+                                                    </option>
+                                                                                                    <option value="62" >
+                                                        62 years
+                                                    </option>
+                                                                                                    <option value="63" >
+                                                        63 years
+                                                    </option>
+                                                                                                    <option value="64" >
+                                                        64 years
+                                                    </option>
+                                                                                                    <option value="65" >
+                                                        65 years
+                                                    </option>
+                                                                                                    <option value="66" >
+                                                        66 years
+                                                    </option>
+                                                                                                    <option value="67" >
+                                                        67 years
+                                                    </option>
+                                                                                                    <option value="68" >
+                                                        68 years
+                                                    </option>
+                                                                                                    <option value="69" >
+                                                        69 years
+                                                    </option>
+                                                                                                    <option value="70" >
+                                                        70 years
+                                                    </option>
+                                                                                                    <option value="71" >
+                                                        71 years
+                                                    </option>
+                                                                                                    <option value="72" >
+                                                        72 years
+                                                    </option>
+                                                                                                    <option value="73" >
+                                                        73 years
+                                                    </option>
+                                                                                                    <option value="74" >
+                                                        74 years
+                                                    </option>
+                                                                                                    <option value="75" >
+                                                        75 years
+                                                    </option>
+                                                                                                    <option value="76" >
+                                                        76 years
+                                                    </option>
+                                                                                                    <option value="77" >
+                                                        77 years
+                                                    </option>
+                                                                                                    <option value="78" >
+                                                        78 years
+                                                    </option>
+                                                                                                    <option value="79" >
+                                                        79 years
+                                                    </option>
+                                                                                                    <option value="80" >
+                                                        80 years
+                                                    </option>
+                                                                                                    <option value="81" >
+                                                        81 years
+                                                    </option>
+                                                                                                    <option value="82" >
+                                                        82 years
+                                                    </option>
+                                                                                                    <option value="83" >
+                                                        83 years
+                                                    </option>
+                                                                                                    <option value="84" >
+                                                        84 years
+                                                    </option>
+                                                                                                    <option value="85" >
+                                                        85 years
+                                                    </option>
+                                                                                                    <option value="86" >
+                                                        86 years
+                                                    </option>
+                                                                                                    <option value="87" >
+                                                        87 years
+                                                    </option>
+                                                                                                    <option value="88" >
+                                                        88 years
+                                                    </option>
+                                                                                                    <option value="89" >
+                                                        89 years
+                                                    </option>
+                                                                                                    <option value="90" >
+                                                        90 years
+                                                    </option>
+                                                                                                    <option value="91" >
+                                                        91 years
+                                                    </option>
+                                                                                                    <option value="92" >
+                                                        92 years
+                                                    </option>
+                                                                                                    <option value="93" >
+                                                        93 years
+                                                    </option>
+                                                                                                    <option value="94" >
+                                                        94 years
+                                                    </option>
+                                                                                                    <option value="95" >
+                                                        95 years
+                                                    </option>
+                                                                                                    <option value="96" >
+                                                        96 years
+                                                    </option>
+                                                                                                    <option value="97" >
+                                                        97 years
+                                                    </option>
+                                                                                                    <option value="98" >
+                                                        98 years
+                                                    </option>
+                                                                                                    <option value="99" >
+                                                        99 years
+                                                    </option>
+                                                                                                    <option value="100" >
+                                                        100 years
+                                                    </option>
+                                                                                                    <option value="101" >
+                                                        101 years
+                                                    </option>
+                                                                                                    <option value="102" >
+                                                        102 years
+                                                    </option>
+                                                                                                    <option value="103" >
+                                                        103 years
+                                                    </option>
+                                                                                                    <option value="104" >
+                                                        104 years
+                                                    </option>
+                                                                                                    <option value="105" >
+                                                        105 years
+                                                    </option>
+                                                                                                    <option value="106" >
+                                                        106 years
+                                                    </option>
+                                                                                                    <option value="107" >
+                                                        107 years
+                                                    </option>
+                                                                                                    <option value="108" >
+                                                        108 years
+                                                    </option>
+                                                                                                    <option value="109" >
+                                                        109 years
+                                                    </option>
+                                                                                                    <option value="110" >
+                                                        110 years
+                                                    </option>
+                                                                                                    <option value="111" >
+                                                        111 years
+                                                    </option>
+                                                                                                    <option value="112" >
+                                                        112 years
+                                                    </option>
+                                                                                                    <option value="113" >
+                                                        113 years
+                                                    </option>
+                                                                                                    <option value="114" >
+                                                        114 years
+                                                    </option>
+                                                                                                    <option value="115" >
+                                                        115 years
+                                                    </option>
+                                                                                                    <option value="116" >
+                                                        116 years
+                                                    </option>
+                                                                                                    <option value="117" >
+                                                        117 years
+                                                    </option>
+                                                                                                    <option value="118" >
+                                                        118 years
+                                                    </option>
+                                                                                                    <option value="119" >
+                                                        119 years
+                                                    </option>
+                                                                                                    <option value="120" >
+                                                        120 years
+                                                    </option>
+                                                                                            </select>
                                             <div class="validation-msg" id="age_msg"></div>
-                                            @error('age')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
+                                                                                    </div>
                                         
                                         <div class="col-md-3 mb-3">
                                             <label for="gender" class="form-label required">
                                                 <span>Gender</span>
                                                 <span class="urdu-label jameel-noori">جنس</span>
                                             </label>
-                                            <select class="form-select @error('gender') is-invalid @enderror" name="gender" required>
+                                            <select class="form-select " name="gender" required>
                                                 <option value="">Select</option>
-                                                <option value="male" {{ old('gender') == 'male' ? 'selected' : '' }}>Male</option>
-                                                <option value="female" {{ old('gender') == 'female' ? 'selected' : '' }}>Female</option>
-                                                <option value="other" {{ old('gender') == 'other' ? 'selected' : '' }}>Other</option>
+                                                <option value="male" >Male</option>
+                                                <option value="female" >Female</option>
+                                                <option value="other" >Other</option>
                                             </select>
                                             <div class="validation-msg" id="gender_msg"></div>
-                                            @error('gender')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
+                                                                                    </div>
                                         
                                         <div class="col-md-6 mb-3 cnic-search-container">
                                             <label for="cnic" class="form-label required">
                                                 <span>CNIC</span>
                                                 <span class="urdu-label jameel-noori">شناختی کارڈ نمبر</span>
                                             </label>
-                                            <input type="text" class="form-control @error('cnic') is-invalid @enderror" 
+                                            <input type="text" class="form-control " 
                                                    id="cnic" name="cnic" 
-                                                   value="{{ old('cnic', $prefillData['cnic'] ?? '') }}" 
+                                                   value="{{ $prefillData['cnic'] ?? '' }}" 
                                                    placeholder="12345-1234567-1" required maxlength="15">
                                             <div class="cnic-search-loading" id="cnicSearchLoading">
                                                 <div class="spinner-border spinner-border-sm text-primary" role="status">
@@ -834,10 +1158,7 @@
                                                 </div>
                                             </div>
                                             <div class="validation-msg" id="cnic_msg"></div>
-                                            @error('cnic')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                            <div class="form-text text-primary" id="cnicSearchResult" style="display: none;"></div>
+                                                                                        <div class="form-text text-primary" id="cnicSearchResult" style="display: none;"></div>
                                         </div>
                                     </div>
 
@@ -847,39 +1168,33 @@
                                                 <span>Phone Number</span>
                                                 <span class="urdu-label jameel-noori">فون نمبر</span>
                                             </label>
-                                            <input type="tel" class="form-control @error('phone') is-invalid @enderror" 
+                                            <input type="tel" class="form-control " 
                                                    id="phone" name="phone" 
-                                                   value="{{ old('phone', $prefillData['phone'] ?? '') }}" 
+                                                   value="{{ $prefillData['phone'] ?? '' }}" 
                                                    required maxlength="15">
                                             <div class="validation-msg" id="phone_msg"></div>
-                                            @error('phone')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
+                                                                                    </div>
                                         
                                         <div class="col-md-6 mb-3">
                                             <label for="education" class="form-label">
                                                 <span>Education</span>
                                                 <span class="urdu-label jameel-noori">تعلیم</span>
                                             </label>
-                                            <select class="form-select @error('education') is-invalid @enderror" 
+                                            <select class="form-select " 
                                                    id="education" name="education">
                                                 <option value="">Select Education Level</option>
-                                                <option value="No Formal Education" {{ old('education') == 'No Formal Education' ? 'selected' : '' }}>No Formal Education</option>
-                                                <option value="Primary (1-5)" {{ old('education') == 'Primary (1-5)' ? 'selected' : '' }}>Primary (1-5)</option>
-                                                <option value="Middle (6-8)" {{ old('education') == 'Middle (6-8)' ? 'selected' : '' }}>Middle (6-8)</option>
-                                                <option value="Matric (9-10)" {{ old('education') == 'Matric (9-10)' ? 'selected' : '' }}>Matric (9-10)</option>
-                                                <option value="Intermediate (11-12)" {{ old('education') == 'Intermediate (11-12)' ? 'selected' : '' }}>Intermediate (11-12)</option>
-                                                <option value="Bachelor's Degree" {{ old('education') == 'Bachelor\'s Degree' ? 'selected' : '' }}>Bachelor's Degree</option>
-                                                <option value="Master's Degree" {{ old('education') == 'Master\'s Degree' ? 'selected' : '' }}>Master's Degree</option>
-                                                <option value="Doctorate" {{ old('education') == 'Doctorate' ? 'selected' : '' }}>Doctorate</option>
-                                                <option value="Other" {{ old('education') == 'Other' ? 'selected' : '' }}>Other</option>
+                                                <option value="No Formal Education" >No Formal Education</option>
+                                                <option value="Primary (1-5)" >Primary (1-5)</option>
+                                                <option value="Middle (6-8)" >Middle (6-8)</option>
+                                                <option value="Matric (9-10)" >Matric (9-10)</option>
+                                                <option value="Intermediate (11-12)" >Intermediate (11-12)</option>
+                                                <option value="Bachelor's Degree" >Bachelor's Degree</option>
+                                                <option value="Master's Degree" >Master's Degree</option>
+                                                <option value="Doctorate" >Doctorate</option>
+                                                <option value="Other" >Other</option>
                                             </select>
                                             <div class="validation-msg" id="education_msg"></div>
-                                            @error('education')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
+                                                                                    </div>
                                     </div>
 
                                     <div class="mb-3">
@@ -887,13 +1202,10 @@
                                             <span>Address</span>
                                             <span class="urdu-label jameel-noori">پتہ</span>
                                         </label>
-                                        <textarea class="form-control @error('address') is-invalid @enderror" 
-                                                  id="address" name="address" rows="3" required>{{ old('address', $prefillData['address'] ?? '') }}</textarea>
+                                        <textarea class="form-control " 
+                                                  id="address" name="address" rows="3" required>{{ $prefillData['address'] ?? '' }}</textarea>
                                         <div class="validation-msg" id="address_msg"></div>
-                                        @error('address')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
+                                                                            </div>
 
                                     <h3 class="form-section-title">
                                         <span>Family Information</span>
@@ -906,34 +1218,28 @@
                                                 <span>Marital Status</span>
                                                 <span class="urdu-label jameel-noori">شادی شدہ/غیر شادی شدہ</span>
                                             </label>
-                                            <select class="form-select @error('marital_status') is-invalid @enderror" 
+                                            <select class="form-select " 
                                                     id="marital_status" name="marital_status" required>
                                                 <option value="">Select Marital Status</option>
-                                                <option value="Single" {{ old('marital_status') == 'Single' ? 'selected' : '' }}>Single</option>
-                                                <option value="Married" {{ old('marital_status') == 'Married' ? 'selected' : '' }}>Married</option>
-                                                <option value="Widowed" {{ old('marital_status') == 'Widowed' ? 'selected' : '' }}>Widowed</option>
-                                                <option value="Divorced" {{ old('marital_status') == 'Divorced' ? 'selected' : '' }}>Divorced</option>
+                                                <option value="Single" >Single</option>
+                                                <option value="Married" >Married</option>
+                                                <option value="Widowed" >Widowed</option>
+                                                <option value="Divorced" >Divorced</option>
                                             </select>
                                             <div class="validation-msg" id="marital_status_msg"></div>
-                                            @error('marital_status')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
+                                                                                    </div>
                                         
                                         <div class="col-md-6 mb-3" id="spouse_name_field" style="display: none;">
                                             <label for="spouse_name" class="form-label">
                                                 <span>Spouse Name</span>
                                                 <span class="urdu-label jameel-noori">بیوی/شوہر کا نام</span>
                                             </label>
-                                            <input type="text" class="form-control @error('spouse_name') is-invalid @enderror" 
+                                            <input type="text" class="form-control " 
                                                    id="spouse_name" name="spouse_name" 
-                                                   value="{{ old('spouse_name') }}" 
+                                                   value="" 
                                                    placeholder="Enter spouse name" maxlength="255">
                                             <div class="validation-msg" id="spouse_name_msg"></div>
-                                            @error('spouse_name')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
+                                                                                    </div>
                                     </div>
 
                                     <div class="row">
@@ -942,43 +1248,34 @@
                                                 <span>Number of Children</span>
                                                 <span class="urdu-label jameel-noori">بچوں کی تعداد</span>
                                             </label>
-                                            <input type="number" class="form-control @error('children_count') is-invalid @enderror" 
+                                            <input type="number" class="form-control " 
                                                    id="children_count" name="children_count" 
-                                                   value="{{ old('children_count', 0) }}" min="0" max="20"
+                                                   value="0" min="0" max="20"
                                                    placeholder="Enter number of children">
                                             <div class="validation-msg" id="children_count_msg"></div>
-                                            @error('children_count')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
+                                                                                    </div>
                                         
                                         <div class="col-md-4 mb-3" id="boys_count_field" style="display: none;">
                                             <label for="boys_count" class="form-label">
                                                 <span>Number of Boys</span>
                                                 <span class="urdu-label jameel-noori">لڑکوں کی تعداد</span>
                                             </label>
-                                            <input type="number" class="form-control @error('boys_count') is-invalid @enderror" 
+                                            <input type="number" class="form-control " 
                                                    id="boys_count" name="boys_count" 
-                                                   value="{{ old('boys_count', 0) }}" min="0" max="20">
+                                                   value="0" min="0" max="20">
                                             <div class="validation-msg" id="boys_count_msg"></div>
-                                            @error('boys_count')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
+                                                                                    </div>
                                         
                                         <div class="col-md-4 mb-3" id="girls_count_field" style="display: none;">
                                             <label for="girls_count" class="form-label">
                                                 <span>Number of Girls</span>
                                                 <span class="urdu-label jameel-noori">لڑکیوں کی تعداد</span>
                                             </label>
-                                            <input type="number" class="form-control @error('girls_count') is-invalid @enderror" 
+                                            <input type="number" class="form-control " 
                                                    id="girls_count" name="girls_count" 
-                                                   value="{{ old('girls_count', 0) }}" min="0" max="20">
+                                                   value="0" min="0" max="20">
                                             <div class="validation-msg" id="girls_count_msg"></div>
-                                            @error('girls_count')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
+                                                                                    </div>
                                     </div>
 
                                     <div class="row" id="children_sum_error_field" style="display: none;">
@@ -997,15 +1294,12 @@
                                             <span>Religion</span>
                                             <span class="urdu-label jameel-noori">مذہب</span>
                                         </label>
-                                        <input type="text" class="form-control @error('religion') is-invalid @enderror" 
+                                        <input type="text" class="form-control " 
                                                id="religion" name="religion" 
-                                               value="{{ old('religion') }}" 
+                                               value="" 
                                                placeholder="Enter religion" maxlength="255">
                                         <div class="validation-msg" id="religion_msg"></div>
-                                        @error('religion')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
+                                                                            </div>
 
                                     <h3 class="form-section-title">
                                         <span>Guardian Information</span>
@@ -1018,30 +1312,24 @@
                                                 <span>Guardian Name</span>
                                                 <span class="urdu-label jameel-noori">سرپرست کا نام</span>
                                             </label>
-                                            <input type="text" class="form-control @error('guardian_name') is-invalid @enderror" 
+                                            <input type="text" class="form-control " 
                                                    id="guardian_name" name="guardian_name" 
-                                                   value="{{ old('guardian_name', $prefillData['guardian_name'] ?? '') }}" 
+                                                   value="{{ $prefillData['guardian_name'] ?? '' }}" 
                                                    required maxlength="255">
                                             <div class="validation-msg" id="guardian_name_msg"></div>
-                                            @error('guardian_name')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
+                                                                                    </div>
                                         
                                         <div class="col-md-6 mb-3">
                                             <label for="guardian_contact" class="form-label required">
                                                 <span>Guardian Contact</span>
                                                 <span class="urdu-label jameel-noori">سرپرست کا رابطہ نمبر</span>
                                             </label>
-                                            <input type="tel" class="form-control @error('guardian_contact') is-invalid @enderror" 
+                                            <input type="tel" class="form-control " 
                                                    id="guardian_contact" name="guardian_contact" 
-                                                   value="{{ old('guardian_contact', $prefillData['guardian_contact'] ?? '') }}" 
+                                                   value="{{ $prefillData['guardian_contact'] ?? '' }}" 
                                                    required maxlength="15">
                                             <div class="validation-msg" id="guardian_contact_msg"></div>
-                                            @error('guardian_contact')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
+                                                                                    </div>
                                     </div>
 
                                     <div class="row">
@@ -1050,30 +1338,24 @@
                                                 <span>Relationship with Patient</span>
                                                 <span class="urdu-label jameel-noori">مریض سے تعلق</span>
                                             </label>
-                                            <input type="text" class="form-control @error('relationship') is-invalid @enderror" 
+                                            <input type="text" class="form-control " 
                                                id="relationship" name="relationship" 
-                                               value="{{ old('relationship') }}" 
+                                               value="" 
                                                required maxlength="255">
                                             <div class="validation-msg" id="relationship_msg"></div>
-                                            @error('relationship')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
+                                                                                    </div>
                                         
                                         <div class="col-md-6 mb-3">
                                             <label for="guardian_address" class="form-label required">
                                                 <span>Guardian Address</span>
                                                 <span class="urdu-label jameel-noori">سرپرست کا پتہ</span>
                                             </label>
-                                            <input type="text" class="form-control @error('guardian_address') is-invalid @enderror" 
+                                            <input type="text" class="form-control " 
                                                    id="guardian_address" name="guardian_address" 
-                                                   value="{{ old('guardian_address') }}" 
+                                                   value="" 
                                                    required maxlength="255">
                                             <div class="validation-msg" id="guardian_address_msg"></div>
-                                            @error('guardian_address')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
+                                                                                    </div>
                                     </div>
 
                                     <div class="button-container">
@@ -1095,29 +1377,23 @@
                                                 <span>Admission Date</span>
                                                 <span class="urdu-label jameel-noori">داخلے کی تاریخ</span>
                                             </label>
-                                            <input type="date" class="form-control @error('admission_date') is-invalid @enderror" 
+                                            <input type="date" class="form-control " 
                                                    id="admission_date" name="admission_date" 
-                                                   value="{{ old('admission_date') }}" required>
+                                                   value="" required>
                                             <div class="validation-msg" id="admission_date_msg"></div>
-                                            @error('admission_date')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
+                                                                                    </div>
                                         
                                         <div class="col-md-6 mb-3">
                                             <label for="reason" class="form-label">
                                                 <span>Reason for Admission</span>
                                                 <span class="urdu-label jameel-noori">داخلے کی وجہ</span>
                                             </label>
-                                            <input type="text" class="form-control @error('reason') is-invalid @enderror" 
+                                            <input type="text" class="form-control " 
                                                    id="reason" name="reason" 
-                                                   value="{{ old('reason') }}" 
+                                                   value="" 
                                                    placeholder="Reason for admission" maxlength="255">
                                             <div class="validation-msg" id="reason_msg"></div>
-                                            @error('reason')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
+                                                                                    </div>
                                     </div>
 
                                     <div class="mb-3">
@@ -1125,57 +1401,45 @@
                                             <span>Disease Name</span>
                                             <span class="urdu-label jameel-noori">بیماری کا نام</span>
                                         </label>
-                                        <input type="text" class="form-control @error('disease_name') is-invalid @enderror" 
+                                        <input type="text" class="form-control " 
                                                id="disease_name" name="disease_name" 
-                                               value="{{ old('disease_name') }}" 
+                                               value="" 
                                                required maxlength="255">
                                         <div class="validation-msg" id="disease_name_msg"></div>
-                                        @error('disease_name')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
+                                                                            </div>
 
                                     <div class="mb-3">
                                         <label for="treatment_details" class="form-label required">
                                             <span>Treatment Details</span>
                                             <span class="urdu-label jameel-noori">علاج کی تفصیل</span>
                                         </label>
-                                        <textarea class="form-control @error('treatment_details') is-invalid @enderror" 
+                                        <textarea class="form-control " 
                                                   id="treatment_details" name="treatment_details" 
-                                                  rows="4" required>{{ old('treatment_details') }}</textarea>
+                                                  rows="4" required></textarea>
                                         <div class="validation-msg" id="treatment_details_msg"></div>
-                                        @error('treatment_details')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
+                                                                            </div>
 
                                     <div class="mb-3">
                                         <label for="case_history" class="form-label required">
                                             <span>Case History</span>
                                             <span class="urdu-label jameel-noori">کیس ہسٹری</span>
                                         </label>
-                                        <textarea class="form-control @error('case_history') is-invalid @enderror" 
+                                        <textarea class="form-control " 
                                                   id="case_history" name="case_history" 
-                                                  rows="4" required>{{ old('case_history') }}</textarea>
+                                                  rows="4" required></textarea>
                                         <div class="validation-msg" id="case_history_msg"></div>
-                                        @error('case_history')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
+                                                                            </div>
 
                                     <div class="mb-3">
                                         <label for="other_diseases" class="form-label">
                                             <span>Other Diseases</span>
                                             <span class="urdu-label jameel-noori">دیگر بیماریاں</span>
                                         </label>
-                                        <textarea class="form-control @error('other_diseases') is-invalid @enderror" 
+                                        <textarea class="form-control " 
                                                   id="other_diseases" name="other_diseases" 
-                                                  rows="3">{{ old('other_diseases') }}</textarea>
+                                                  rows="3"></textarea>
                                         <div class="validation-msg" id="other_diseases_msg"></div>
-                                        @error('other_diseases')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
+                                                                            </div>
 
                                     <div class="button-container">
                                         <button type="button" class="btn btn-primary prev-step">Previous</button>
@@ -1204,15 +1468,12 @@
                                             <span>Copy of ID Card (Front)</span>
                                             <span class="urdu-label jameel-noori">شناختی کارڈ کی کاپی (سامنے)</span>
                                         </label>
-                                        <input type="file" class="form-control @error('id_card_front') is-invalid @enderror" 
+                                        <input type="file" class="form-control " 
                                                id="id_card_front" name="id_card_front" 
                                                accept=".pdf,.jpg,.jpeg,.png" required>
                                         <div class="file-requirements">Accepted formats: PDF, JPG, JPEG, PNG | Max size: 5MB</div>
                                         <div class="validation-msg" id="id_card_front_msg"></div>
-                                        @error('id_card_front')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                        <div class="file-preview" id="id_card_front_preview"></div>
+                                                                                <div class="file-preview" id="id_card_front_preview"></div>
                                     </div>
 
                                     <div class="mb-3 file-input-group">
@@ -1220,15 +1481,12 @@
                                             <span>Copy of ID Card (Back)</span>
                                             <span class="urdu-label jameel-noori">شناختی کارڈ کی کاپی (پیچھے)</span>
                                         </label>
-                                        <input type="file" class="form-control @error('id_card_back') is-invalid @enderror" 
+                                        <input type="file" class="form-control " 
                                                id="id_card_back" name="id_card_back" 
                                                accept=".pdf,.jpg,.jpeg,.png" required>
                                         <div class="file-requirements">Accepted formats: PDF, JPG, JPEG, PNG | Max size: 5MB</div>
                                         <div class="validation-msg" id="id_card_back_msg"></div>
-                                        @error('id_card_back')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                        <div class="file-preview" id="id_card_back_preview"></div>
+                                                                                <div class="file-preview" id="id_card_back_preview"></div>
                                     </div>
 
                                     <div class="mb-3 file-input-group">
@@ -1236,18 +1494,12 @@
                                             <span>Passport-Sized Photographs</span>
                                             <span class="urdu-label jameel-noori">پاسپورٹ سائز تصاویر</span>
                                         </label>
-                                        <input type="file" class="form-control @error('passport_photos') is-invalid @enderror" 
+                                        <input type="file" class="form-control " 
                                                id="passport_photos" name="passport_photos[]" 
                                                accept=".jpg,.jpeg,.png" multiple required>
                                         <div class="file-requirements">Upload at least one recent photograph. Accepted formats: JPG, JPEG, PNG | Max size: 5MB per file</div>
                                         <div class="validation-msg" id="passport_photos_msg"></div>
-                                        @error('passport_photos')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                        @error('passport_photos.*')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                        <div class="file-preview" id="passport_photos_preview"></div>
+                                                                                                                        <div class="file-preview" id="passport_photos_preview"></div>
                                     </div>
 
                                     <div class="mb-3 file-input-group">
@@ -1255,18 +1507,12 @@
                                             <span>Medical Reports (including HIV Test)</span>
                                             <span class="urdu-label jameel-noori">طبی رپورٹس (بشمول ایچ آئی وی ٹیسٹ)</span>
                                         </label>
-                                        <input type="file" class="form-control @error('medical_reports') is-invalid @enderror" 
+                                        <input type="file" class="form-control " 
                                                id="medical_reports" name="medical_reports[]" 
                                                accept=".pdf,.jpg,.jpeg,.png" multiple required>
                                         <div class="file-requirements">Upload at least one medical report. Accepted formats: PDF, JPG, JPEG, PNG | Max size: 5MB per file</div>
                                         <div class="validation-msg" id="medical_reports_msg"></div>
-                                        @error('medical_reports')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                        @error('medical_reports.*')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                        <div class="file-preview" id="medical_reports_preview"></div>
+                                                                                                                        <div class="file-preview" id="medical_reports_preview"></div>
                                     </div>
 
                                     <div class="mb-3 file-input-group">
@@ -1274,15 +1520,12 @@
                                             <span>Referral Form</span>
                                             <span class="urdu-label jameel-noori">ریفرل فارم</span>
                                         </label>
-                                        <input type="file" class="form-control @error('referral_form') is-invalid @enderror" 
+                                        <input type="file" class="form-control " 
                                                id="referral_form" name="referral_form" 
                                                accept=".pdf,.jpg,.jpeg,.png" required>
                                         <div class="file-requirements">Accepted formats: PDF, JPG, JPEG, PNG | Max size: 5MB</div>
                                         <div class="validation-msg" id="referral_form_msg"></div>
-                                        @error('referral_form')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                        <div class="file-preview" id="referral_form_preview"></div>
+                                                                                <div class="file-preview" id="referral_form_preview"></div>
                                     </div>
 
                                     <div class="mb-3 file-input-group">
@@ -1290,15 +1533,12 @@
                                             <span>Affidavit on Stamp Paper (Optional)</span>
                                             <span class="urdu-label jameel-noori">اسٹامپ پیپر پر بیان (اختیاری)</span>
                                         </label>
-                                        <input type="file" class="form-control @error('affidavit') is-invalid @enderror" 
+                                        <input type="file" class="form-control " 
                                                id="affidavit" name="affidavit" 
                                                accept=".pdf,.jpg,.jpeg,.png">
                                         <div class="file-requirements">Accepted formats: PDF, JPG, JPEG, PNG | Max size: 5MB</div>
                                         <div class="validation-msg" id="affidavit_msg"></div>
-                                        @error('affidavit')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                        <div class="file-preview" id="affidavit_preview"></div>
+                                                                                <div class="file-preview" id="affidavit_preview"></div>
                                     </div>
 
                                     <div class="mb-3 file-input-group">
@@ -1306,18 +1546,12 @@
                                             <span>Additional Documents (Optional)</span>
                                             <span class="urdu-label jameel-noori">اضافی دستاویزات (اختیاری)</span>
                                         </label>
-                                        <input type="file" class="form-control @error('additional_documents') is-invalid @enderror" 
+                                        <input type="file" class="form-control " 
                                                id="additional_documents" name="additional_documents[]" 
                                                accept=".pdf,.jpg,.jpeg,.png" multiple>
                                         <div class="file-requirements">Accepted formats: PDF, JPG, JPEG, PNG | Max size: 5MB per file</div>
                                         <div class="validation-msg" id="additional_documents_msg"></div>
-                                        @error('additional_documents')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                        @error('additional_documents.*')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                        <div class="file-preview" id="additional_documents_preview"></div>
+                                                                                                                        <div class="file-preview" id="additional_documents_preview"></div>
                                     </div>
 
                                     <div class="button-container">
