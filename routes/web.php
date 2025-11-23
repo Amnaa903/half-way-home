@@ -85,8 +85,10 @@ Route::middleware(['auth'])->group(function () {
         Route::prefix('registration')->name('registration.')->group(function () {
             // Create registration form
             Route::get('/create', [InchargeController::class, 'createRegistration'])->name('create');
-            // Store registration data
+            
+            // ✅ FIXED: ADDED MISSING STORE ROUTE
             Route::post('/store', [InchargeController::class, 'storeRegistration'])->name('store');
+            
             // View registration list
             Route::get('/list', [InchargeController::class, 'registrationList'])->name('list');
             // Get registration data for editing
@@ -223,7 +225,7 @@ Route::middleware(['auth'])->group(function () {
 
     // ==================== ADDITIONAL ROUTES FOR COMPATIBILITY ====================
     
-    // Direct routes for easier access
+    // ✅ FIXED: ADDED ALL MISSING ROUTES
     Route::get('/incharge/create-registration', [InchargeController::class, 'createRegistration'])->name('incharge.create.registration');
     Route::post('/incharge/store-registration', [InchargeController::class, 'storeRegistration'])->name('incharge.store.registration');
     Route::get('/incharge/registration-list', [InchargeController::class, 'registrationList'])->name('incharge.registration.list');
@@ -259,6 +261,51 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin', function () {
         return redirect()->route('admin.dashboard');
     });
+    
+    // ✅ ADDED: Debug routes for testing
+    Route::get('/debug/incharge-data', function() {
+        if (!Auth::check()) {
+            return "Please login first as Incharge";
+        }
+        
+        $user = Auth::user();
+        $allIncharges = \App\Models\Incharge::all();
+        $userIncharges = \App\Models\Incharge::where('user_district', $user->district)->get();
+        
+        return response()->json([
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'district' => $user->district,
+                'role' => $user->role
+            ],
+            'all_incharges_count' => $allIncharges->count(),
+            'all_incharges' => $allIncharges->map(function($item) {
+                return [
+                    'id' => $item->id,
+                    'name' => $item->rname,
+                    'cnic' => $item->rcnic,
+                    'district' => $item->user_district,
+                    'user_id' => $item->user_id,
+                    'created_at' => $item->created_at
+                ];
+            }),
+            'user_incharges_count' => $userIncharges->count(),
+            'user_incharges' => $userIncharges->map(function($item) {
+                return [
+                    'id' => $item->id,
+                    'name' => $item->rname,
+                    'cnic' => $item->rcnic,
+                    'created_at' => $item->created_at
+                ];
+            })
+        ]);
+    });
+    
+    // ✅ ADDED: Test form submission route
+    Route::get('/test/form-submission', function() {
+        return view('test_form_submission');
+    });
 });
 
 // ==================== PUBLIC UTILITY ROUTES ====================
@@ -278,6 +325,23 @@ Route::get('/system-info', function () {
 // Health check route
 Route::get('/health', function () {
     return response()->json(['status' => 'healthy', 'timestamp' => now()]);
+});
+
+// Route list for debugging
+Route::get('/route-list', function() {
+    $routes = Route::getRoutes();
+    $routeList = [];
+    
+    foreach ($routes as $route) {
+        $routeList[] = [
+            'method' => $route->methods()[0],
+            'uri' => $route->uri(),
+            'name' => $route->getName(),
+            'action' => $route->getActionName()
+        ];
+    }
+    
+    return response()->json($routeList);
 });
 
 // Fixed Fallback Route

@@ -123,14 +123,14 @@
 <body class="bg-light">
     <nav class="navbar navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="http://127.0.0.1:8000/incharge/dashboard">
+            <a class="navbar-brand" href="{{ route('incharge.dashboard') }}">
                 <i class="fas fa-home"></i> Half Way Home
             </a>
             <div>
-                <a href="http://127.0.0.1:8000/incharge/dashboard" class="btn btn-light me-2">
+                <a href="{{ route('incharge.dashboard') }}" class="btn btn-light me-2">
                     <i class="fas fa-arrow-left"></i> Dashboard
                 </a>
-                <a href="http://127.0.0.1:8000/incharge/registration/create" class="btn btn-success">
+                <a href="{{ route('incharge.registration.create') }}" class="btn btn-success">
                     <i class="fas fa-plus"></i> Add New
                 </a>
             </div>
@@ -144,20 +144,41 @@
             </div>
             <div class="card-body">
                 <!-- Messages -->
-                
-                
-                
+                @if (session('success'))
+                    <div class="alert alert-success alert-dismissible fade show">
+                        <i class="fas fa-check-circle"></i> {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                @endif
+
+                @if (session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show">
+                        <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                @endif
+
+                @if (session('auto_removed'))
+                    <div class="alert alert-info alert-dismissible fade show">
+                        <i class="fas fa-info-circle"></i> {{ session('auto_removed') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                @endif
+
                 <!-- User Info -->
                 <div class="alert alert-info">
                     <strong>User Info:</strong><br>
-                    District: Lahore<br>
-                    Total Records: 2
+                    District: {{ auth()->user()->district }}<br>
+                    Total Records: {{ $incharges->count() }}
                 </div>
 
                 <!-- Bulk Actions -->
+                @if($incharges->count() > 0)
                 <div class="bulk-actions">
-                    <form id="bulkForm" action="http://127.0.0.1:8000/incharge/registration/bulk-delete" method="POST">
-                        <input type="hidden" name="_token" value="WJHzvmX8xj51bUQRhPRSceuxrjL2TZjc6ICLyy8t" autocomplete="off">                        <input type="hidden" name="_method" value="DELETE">                        <div class="row align-items-center">
+                    <form id="bulkForm" action="{{ route('incharge.registration.bulk-delete') }}" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <div class="row align-items-center">
                             <div class="col-md-6">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" id="selectAll">
@@ -170,95 +191,94 @@
                                 <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete selected registrations?')">
                                     <i class="fas fa-trash"></i> Delete Selected
                                 </button>
-                                <a href="http://127.0.0.1:8000/incharge/registration/export" class="btn btn-warning btn-sm">
+                                <a href="{{ route('incharge.registration.export') }}" class="btn btn-warning btn-sm">
                                     <i class="fas fa-download"></i> Export
                                 </a>
                             </div>
                         </div>
                     </form>
                 </div>
-                
-                <div class="table-responsive">
-                    <table class="table table-striped table-bordered">
-                        <thead class="table-dark">
-                            <tr>
-                                <th width="50">Select</th>
-                                <th>#</th>
-                                <th>Full Name</th>
-                                <th>Date</th>
-                                <th>CNIC</th>
-                                <th>District</th>
-                                <th>Status</th>
-                                <th>Created At</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <input type="checkbox" name="selected_ids[]" value="19" class="form-check-input row-checkbox">
-                                </td>
-                                <td>1</td>
-                                <td>zeeshan</td>
-                                <td>2025-11-18</td>
-                                <td>3333333333333</td>
-                                <td>Lahore</td>
-                                <td>
-                                    <span class="status-badge status-pending">
-                                        <i class="fas fa-clock"></i> Pending
-                                    </span>
-                                </td>
-                                <td>23-11-2025 13:44</td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <!-- Delete Button -->
-                                        <form action="http://127.0.0.1:8000/incharge/registration/19" method="POST" class="d-inline">
-                                            <input type="hidden" name="_token" value="WJHzvmX8xj51bUQRhPRSceuxrjL2TZjc6ICLyy8t" autocomplete="off">                                                <input type="hidden" name="_method" value="DELETE">                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this registration?')">
-                                                <i class="fas fa-trash"></i> Delete
+                @endif
+
+                @if($incharges->count() > 0)
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th width="50">Select</th>
+                                    <th>#</th>
+                                    <th>Full Name</th>
+                                    <th>Date</th>
+                                    <th>CNIC</th>
+                                    <th>District</th>
+                                    <th>Status</th>
+                                    <th>Created At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($incharges as $item)
+                                @php
+                                    // Check if this incharge is already registered in HWH
+                                    $isRegistered = DB::table('hwh_admissions')->where('cnic', $item->rcnic)->exists();
+                                @endphp
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" name="selected_ids[]" value="{{ $item->id }}" class="form-check-input row-checkbox">
+                                    </td>
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $item->rname }}</td>
+                                    <td>{{ $item->reg_date }}</td>
+                                    <td>{{ $item->rcnic }}</td>
+                                    <td>{{ $item->user_district }}</td>
+                                    <td>
+                                        @if($isRegistered)
+                                            <span class="status-badge status-registered">
+                                                <i class="fas fa-check-circle"></i> Registered
+                                            </span>
+                                        @else
+                                            <span class="status-badge status-pending">
+                                                <i class="fas fa-clock"></i> Pending
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td>{{ $item->created_at->format('d-m-Y H:i') }}</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <!-- Delete Button -->
+                                            <form action="{{ route('incharge.registration.destroy', $item->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this registration?')">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </button>
+                                            </form>
+                                            
+                                            <!-- Register Button -->
+                                          
+                                          
+                                            
+                                            <!-- Edit Button -->
+                                            <button type="button" class="btn btn-primary btn-sm" onclick="editRegistration({{ $item->id }})">
+                                                <i class="fas fa-edit"></i> Edit
                                             </button>
-                                        </form>
-                                        
-                                        <!-- Edit Button -->
-                                        <button type="button" class="btn btn-primary btn-sm" onclick="editRegistration(19)">
-                                            <i class="fas fa-edit"></i> Edit
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <input type="checkbox" name="selected_ids[]" value="14" class="form-check-input row-checkbox">
-                                </td>
-                                <td>2</td>
-                                <td>waqar</td>
-                                <td>2025-11-21</td>
-                                <td>1111111111111</td>
-                                <td>Lahore</td>
-                                <td>
-                                    <span class="status-badge status-pending">
-                                        <i class="fas fa-clock"></i> Pending
-                                    </span>
-                                </td>
-                                <td>21-11-2025 10:22</td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <!-- Delete Button -->
-                                        <form action="http://127.0.0.1:8000/incharge/registration/14" method="POST" class="d-inline">
-                                            <input type="hidden" name="_token" value="WJHzvmX8xj51bUQRhPRSceuxrjL2TZjc6ICLyy8t" autocomplete="off">                                                <input type="hidden" name="_method" value="DELETE">                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this registration?')">
-                                                <i class="fas fa-trash"></i> Delete
-                                            </button>
-                                        </form>
-                                        
-                                        <!-- Edit Button -->
-                                        <button type="button" class="btn btn-primary btn-sm" onclick="editRegistration(14)">
-                                            <i class="fas fa-edit"></i> Edit
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                        <h4 class="text-muted">No Registrations Found</h4>
+                        <p class="text-muted">No registration records found for your district.</p>
+                        <a href="{{ route('incharge.registration.create') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Create First Registration
+                        </a>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
@@ -272,7 +292,9 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="editForm" method="POST">
-                    <input type="hidden" name="_token" value="WJHzvmX8xj51bUQRhPRSceuxrjL2TZjc6ICLyy8t" autocomplete="off">                    <input type="hidden" name="_method" value="PUT">                    <div class="modal-body">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-body">
                         <div class="mb-3">
                             <label for="edit_rname" class="form-label">Full Name</label>
                             <input type="text" class="form-control" id="edit_rname" name="rname" required>
@@ -391,7 +413,7 @@
             // Ctrl + N for new registration
             if (e.ctrlKey && e.key === 'n') {
                 e.preventDefault();
-                window.location.href = "http://127.0.0.1:8000/incharge/registration/create";
+                window.location.href = "{{ route('incharge.registration.create') }}";
             }
         });
     </script>
