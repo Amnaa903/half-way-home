@@ -13,56 +13,15 @@ class HWHAdmission extends Model
     protected $table = 'hwh_admissions';
 
     protected $fillable = [
-        // Personal Information
-        'patient_name',
-        'father_name', 
-        'age',
-        'gender',
-        'cnic',
-        'phone',
-        'education',
-        'address',
-        
-        // Family Information
-        'marital_status',
-        'spouse_name',
-        'children_count',
-        'boys_count',
-        'girls_count',
-        'religion',
-        
-        // Guardian Information
-        'guardian_name',
-        'guardian_contact',
-        'relationship',
-        'guardian_address',
-        
-        // Medical History
-        'admission_date',
-        'reason',
-        'disease_name',
-        'treatment_details',
-        'case_history',
-        'other_diseases',
-        
-        // File Attachments
-        'id_card_front',
-        'id_card_back',
-        'passport_photos',
-        'medical_reports',
-        'referral_form',
-        'affidavit',
-        'additional_documents',
-        
-        // Additional Fields
-        'incharge_id',
-        'reference_id',
-        
-        // Discharge Fields
-        'status',
-        'discharge_date',
-        'discharge_reason',
-        'discharge_notes'
+        'patient_name', 'father_name', 'age', 'gender', 'cnic', 'phone',
+        'education', 'address', 'marital_status', 'spouse_name',
+        'children_count', 'boys_count', 'girls_count', 'religion',
+        'guardian_name', 'guardian_contact', 'relationship', 'guardian_address',
+        'admission_date', 'reason', 'disease_name', 'treatment_details',
+        'case_history', 'other_diseases', 'id_card_front', 'id_card_back',
+        'passport_photos', 'medical_reports', 'referral_form', 'affidavit',
+        'additional_documents', 'incharge_id', 'reference_id', 'status',
+        'discharge_date', 'discharge_reason', 'discharge_notes'
     ];
 
     protected $casts = [
@@ -73,42 +32,19 @@ class HWHAdmission extends Model
         'discharge_date' => 'date',
     ];
 
-    // Children relationship
     public function children()
     {
         return $this->hasMany(Child::class, 'hwh_admission_id');
     }
 
-    // Incharge relationship
     public function incharge()
     {
-        return $this->belongsTo(Incharge::class, 'incharge_id');
+        return $this->belongsTo(Incharge::class);
     }
 
-    // Format CNIC for display
     public function getFormattedCnicAttribute()
     {
-        if (!$this->cnic || strlen($this->cnic) !== 13) {
-            return $this->cnic;
-        }
+        if (!$this->cnic || strlen($this->cnic) !== 13) return $this->cnic;
         return substr($this->cnic, 0, 5) . '-' . substr($this->cnic, 5, 7) . '-' . substr($this->cnic, 12, 1);
-    }
-
-    // Scope for active admissions
-    public function scopeActive($query)
-    {
-        return $query->where('status', 'active');
-    }
-
-    // Scope for discharged admissions
-    public function scopeDischarged($query)
-    {
-        return $query->where('status', 'discharged');
-    }
-
-    // Generate reference ID
-    public static function generateReferenceId()
-    {
-        return 'HWH-' . date('Ymd') . '-' . strtoupper(Str::random(6));
     }
 }

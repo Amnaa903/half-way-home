@@ -16,6 +16,14 @@ class HomeController extends Controller
     }
 
     /**
+     * Show admin dashboard
+     */
+    public function adminDashboard()
+    {
+        return view('admin.dashboard');
+    }
+
+    /**
      * Show the application dashboard (after login)
      */
     public function index(Request $request)
@@ -35,16 +43,18 @@ class HomeController extends Controller
             'user_type' => $user->user_type ?? 'unknown'
         ]);
 
-        if (isset($user->user_type)) {
-            if ($user->user_type === 'incharge') {
-                return redirect()->route('incharge.dashboard');
-            } elseif ($user->user_type === 'deo') {
-                return redirect()->route('deo.dashboard');
-            }
-            // Admin users will see the home view directly
+        // Redirect based on user type
+        if ($user->user_type === 'incharge') {
+            return redirect()->route('incharge.dashboard');
+        } 
+        elseif ($user->user_type === 'deo') {
+            return redirect()->route('deo.dashboard');
+        }
+        elseif ($user->user_type === 'admin') {
+            return redirect()->route('admin.dashboard');
         }
 
-        // Default fallback - show home view (admin dashboard)
+        // Default fallback - show home view
         return view('home', compact('user'));
     }
 }

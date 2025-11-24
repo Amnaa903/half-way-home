@@ -11,6 +11,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\InchargeController;
 use App\Http\Controllers\DeoController;
 use App\Http\Controllers\HWHAdmissionController;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', [HomeController::class, 'welcome'])->name('welcome');
 Route::get('/home', [HomeController::class, 'index'])->name('home');
@@ -22,8 +23,10 @@ Route::prefix('hwhadmissions')->name('hwhadmissions.')->group(function () {
     
     // Create admission form (accessible from pending registration)
     Route::get('/create', [HWHAdmissionController::class, 'create'])->name('create');
-    // Store admission data
+    
+    // ✅ FIXED: SINGLE STORE ROUTE
     Route::post('/', [HWHAdmissionController::class, 'store'])->name('store');
+    
     // List all admissions
     Route::get('/', [HWHAdmissionController::class, 'index'])->name('index');
     // Show single admission
@@ -34,20 +37,13 @@ Route::prefix('hwhadmissions')->name('hwhadmissions.')->group(function () {
     Route::put('/{id}', [HWHAdmissionController::class, 'update'])->name('update');
     // Delete admission
     Route::delete('/{id}', [HWHAdmissionController::class, 'destroy'])->name('destroy');
-    // Show attachments
-    Route::get('/{id}/attachment/{field}', [HWHAdmissionController::class, 'showAttachment'])->name('attachment.show');
     
-    // ✅ DISCHARGE SYSTEM ROUTES - PUBLIC
+    // ✅ DISCHARGE SYSTEM ROUTES
     Route::prefix('discharges')->name('discharges.')->group(function () {
-        // Active patients for discharge
         Route::get('/', [HWHAdmissionController::class, 'dischargeIndex'])->name('index');
-        // Discharge form
         Route::get('/create/{id}', [HWHAdmissionController::class, 'dischargeCreate'])->name('create');
-        // Process discharge
         Route::post('/', [HWHAdmissionController::class, 'dischargeStore'])->name('store');
-        // Discharged patients list
         Route::get('/discharged-list', [HWHAdmissionController::class, 'dischargedList'])->name('discharged-list');
-        // Reverse discharge
         Route::post('/reverse/{id}', [HWHAdmissionController::class, 'reverseDischarge'])->name('reverse');
     });
 });
@@ -86,7 +82,7 @@ Route::middleware(['auth'])->group(function () {
             // Create registration form
             Route::get('/create', [InchargeController::class, 'createRegistration'])->name('create');
             
-            // ✅ FIXED: ADDED MISSING STORE ROUTE
+            // Store registration data
             Route::post('/store', [InchargeController::class, 'storeRegistration'])->name('store');
             
             // View registration list
@@ -195,23 +191,23 @@ Route::middleware(['auth'])->group(function () {
     
     // ==================== ADMIN ROUTES ====================
     Route::prefix('admin')->name('admin.')->group(function () {
-        // Admin Dashboard
-        Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
+        // ✅ ADMIN DASHBOARD ROUTE ADDED
+        Route::get('/dashboard', [HomeController::class, 'adminDashboard'])->name('dashboard');
         
         // Admin HWH Admissions Management
         Route::get('/hwh-admissions', [HWHAdmissionController::class, 'index'])->name('hwh.admissions');
         Route::get('/hwh-admissions/{id}', [HWHAdmissionController::class, 'show'])->name('hwh.admissions.show');
         Route::delete('/hwh-admissions/{id}', [HWHAdmissionController::class, 'destroy'])->name('hwh.admissions.destroy');
-        
+        Route::post('/hwhadmissions', [HWHAdmissionFormController::class, 'store'])->name('hwhadmissions.store');
         // Admin Registration Management
-        Route::get('/pending-registration', [InchargeController::class, 'deoPendingRegistration'])->name('pending.registration');
-        Route::delete('/registration/{id}', [InchargeController::class, 'deoDestroyRegistration'])->name('registration.destroy');
+        Route::get('/pending-registration', [InchargeController::class, 'deoPendingRegistration'])->name('admin.pending.registration');
+        Route::delete('/registration/{id}', [InchargeController::class, 'deoDestroyRegistration'])->name('admin.registration.destroy');
         
         // Admin Discharge Management
-        Route::get('/discharge/pending', [InchargeController::class, 'deoPendingDischarge'])->name('discharge.pending');
-        Route::delete('/discharge/{id}', [InchargeController::class, 'destroyDischarge'])->name('discharge.destroy');
+        Route::get('/discharge/pending', [InchargeController::class, 'deoPendingDischarge'])->name('admin.discharge.pending');
+        Route::delete('/discharge/{id}', [InchargeController::class, 'destroyDischarge'])->name('admin.discharge.destroy');
         // Admin bulk delete discharges
-        Route::post('/discharge/bulk-delete', [InchargeController::class, 'bulkDeleteDischarge'])->name('discharge.bulk-delete');
+        Route::post('/discharge/bulk-delete', [InchargeController::class, 'bulkDeleteDischarge'])->name('admin.discharge.bulk-delete');
         
         // ✅ ADMIN DISCHARGE SYSTEM ACCESS
         Route::prefix('hwh-discharges')->name('hwh.discharges.')->group(function () {
