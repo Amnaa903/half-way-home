@@ -582,10 +582,13 @@ class InchargeController extends Controller
         return response()->json(['status' => 'not_exists'], 200);
     }
 
+    /**
+     * Show discharge creation form - ✅ FIXED
+     */
     public function createDischarge()
     {
         $user = Auth::user();
-        return view('incharge.create_discharge');
+        return view('incharge.discharge.create'); // ✅ FIXED PATH
     }
 
     public function storeDischarge(Request $request)
