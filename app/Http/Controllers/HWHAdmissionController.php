@@ -238,13 +238,131 @@ class HwhAdmissionController extends Controller
         }
     }
 
-    // Other methods (show, edit, update, destroy, searchByCnic, etc.) remain unchanged
-    // You can keep them exactly as they were — they are correct.
-
     public function show($id)
     {
         $record = HWHAdmission::with('children')->findOrFail($id);
         return view('hwhadmissions.show', compact('record'));
+    }
+
+    public function edit($id)
+    {
+        $record = HWHAdmission::with('children')->findOrFail($id);
+        return view('hwhadmissions.edit', compact('record'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $admission = HWHAdmission::findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'patient_name' => 'required|string|max:255',
+            'father_name' => 'required|string|max:255',
+            'age' => 'required|integer|min:1|max:120',
+            'gender' => 'required|in:male,female,other',
+            'cnic' => 'required|string|regex:/^\d{5}-\d{7}-\d{1}$/|unique:hwh_admissions,cnic,' . $admission->id,
+            'phone' => 'required|string|max:15',
+            'address' => 'required|string',
+            'guardian_name' => 'required|string|max:255',
+            'guardian_contact' => 'required|string|max:15',
+            'relationship' => 'required|string|max:255',
+            'guardian_address' => 'required|string',
+            'admission_date' => 'required|date',
+            'disease_name' => 'required|string|max:255',
+            'treatment_details' => 'required|string',
+            'case_history' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $formattedCnic = $this->formatCnicForStorage($request->cnic);
+
+            $updateData = [
+                'patient_name' => $request->patient_name,
+                'father_name' => $request->father_name,
+                'age' => $request->age,
+                'gender' => $request->gender,
+                'cnic' => $formattedCnic,
+                'phone' => $request->phone,
+                'education' => $request->education,
+                'address' => $request->address,
+                'marital_status' => $request->marital_status,
+                'spouse_name' => $request->spouse_name,
+                'children_count' => $request->children_count ?? 0,
+                'boys_count' => $request->boys_count ?? 0,
+                'girls_count' => $request->girls_count ?? 0,
+                'religion' => $request->religion,
+                'guardian_name' => $request->guardian_name,
+                'guardian_contact' => $request->guardian_contact,
+                'relationship' => $request->relationship,
+                'guardian_address' => $request->guardian_address,
+                'admission_date' => $request->admission_date,
+                'reason' => $request->reason,
+                'disease_name' => $request->disease_name,
+                'treatment_details' => $request->treatment_details,
+                'case_history' => $request->case_history,
+                'other_diseases' => $request->other_diseases,
+            ];
+
+            // Handle file updates if needed
+            $admission->update($updateData);
+
+            // Update children
+            if ($request->has('children')) {
+                // Delete existing children
+                Child::where('hwh_admission_id', $admission->id)->delete();
+                
+                // Add new children
+                foreach ($request->children as $child) {
+                    if (!empty($child['name']) && !empty($child['gender'])) {
+                        Child::create([
+                            'hwh_admission_id' => $admission->id,
+                            'name' => $child['name'],
+                            'gender' => $child['gender'],
+                            'age' => $child['age'] ?? null,
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->route('hwhadmissions.show', $admission->id)
+                ->with('success', 'Admission updated successfully!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Failed to update admission: ' . $e->getMessage())->withInput();
+        }
+    }
+
+    public function destroy($id)
+    {
+        DB::beginTransaction();
+        try {
+            $admission = HWHAdmission::findOrFail($id);
+            
+            // Delete associated children
+            Child::where('hwh_admission_id', $admission->id)->delete();
+            
+            // Delete admission
+            $admission->delete();
+            
+            DB::commit();
+            
+            return redirect()->route('hwhadmissions.index')
+                ->with('success', 'Admission deleted successfully!');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Failed to delete admission: ' . $e->getMessage());
+        }
     }
 
     public function searchByCnic(Request $request)
@@ -307,5 +425,120 @@ class HwhAdmissionController extends Controller
         ];
     }
 
-    // Discharge methods remain unchanged...
+    // ==================== DISCHARGE METHODS ====================
+
+    /**
+     * Display discharge index page
+     */
+    public function dischargeIndex()
+    {
+        $admissions = HWHAdmission::where('status', 'active')
+                        ->orderBy('patient_name')
+                        ->get();
+        
+        return view('hwh-discharges.index', compact('admissions'));
+    }
+
+    /**
+     * Show discharge creation form
+     */
+    public function dischargeCreate($id)
+    {
+        $admission = HWHAdmission::with('children')->findOrFail($id);
+        
+        if ($admission->status !== 'active') {
+            return redirect()->route('hwh.discharges.index')
+                ->with('error', 'This patient is not currently admitted.');
+        }
+        
+        return view('hwh-discharges.create', compact('admission'));
+    }
+
+    /**
+     * Store discharge data
+     */
+    public function dischargeStore(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'hwh_admission_id' => 'required|exists:hwh_admissions,id',
+            'discharge_date' => 'required|date',
+            'discharge_reason' => 'required|string|max:255',
+            'discharge_summary' => 'required|string',
+            'follow_up_instructions' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('error', 'Please fix the validation errors.');
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $admission = HWHAdmission::findOrFail($request->hwh_admission_id);
+            
+            // Update admission status to discharged
+            $admission->update([
+                'discharge_date' => $request->discharge_date,
+                'discharge_reason' => $request->discharge_reason,
+                'discharge_summary' => $request->discharge_summary,
+                'follow_up_instructions' => $request->follow_up_instructions,
+                'status' => 'discharged',
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('hwh.discharges.discharged-list')
+                ->with('success', 'Patient discharged successfully!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()
+                ->with('error', 'Failed to discharge patient: ' . $e->getMessage())
+                ->withInput();
+        }
+    }
+
+    /**
+     * Display discharged patients list
+     */
+    public function dischargedList()
+    {
+        $dischargedPatients = HWHAdmission::where('status', 'discharged')
+                            ->orderBy('discharge_date', 'desc')
+                            ->paginate(10);
+        
+        return view('hwh-discharges.discharged_list', compact('dischargedPatients'));
+    }
+
+    /**
+     * Reverse discharge (readmit patient)
+     */
+    public function reverseDischarge($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $admission = HWHAdmission::findOrFail($id);
+            
+            $admission->update([
+                'discharge_date' => null,
+                'discharge_reason' => null,
+                'discharge_summary' => null,
+                'follow_up_instructions' => null,
+                'status' => 'active',
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('hwh.discharges.discharged-list')
+                ->with('success', 'Patient readmitted successfully!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Failed to readmit patient: ' . $e->getMessage());
+        }
+    }
 }
