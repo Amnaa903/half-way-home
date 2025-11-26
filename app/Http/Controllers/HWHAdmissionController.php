@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 
-class HwhAdmissionController extends Controller
+class HWHAdmissionController extends Controller
 {
     private function formatCnicForDisplay($cnic)
     {
@@ -425,18 +425,18 @@ class HwhAdmissionController extends Controller
         ];
     }
 
-    // ==================== DISCHARGE METHODS ====================
+    // ==================== DISCHARGE METHODS - ADDED AT THE END ====================
 
     /**
      * Display discharge index page
      */
     public function dischargeIndex()
     {
-        $admissions = HWHAdmission::where('status', 'active')
+        $activeAdmissions = HWHAdmission::where('status', 'active')
                         ->orderBy('patient_name')
-                        ->get();
+                        ->paginate(10);
         
-        return view('hwh-discharges.index', compact('admissions'));
+        return view('hwh-discharges.index', compact('activeAdmissions'));
     }
 
     /**
@@ -447,11 +447,14 @@ class HwhAdmissionController extends Controller
         $admission = HWHAdmission::with('children')->findOrFail($id);
         
         if ($admission->status !== 'active') {
-            return redirect()->route('hwh.discharges.index')
+            return redirect()->route('hwhadmissions.discharges.index')
                 ->with('error', 'This patient is not currently admitted.');
         }
         
-        return view('hwh-discharges.create', compact('admission'));
+        // Check if this is coming from pending discharges
+        $pendingDischarge = null;
+        
+        return view('hwh-discharges.create', compact('admission', 'pendingDischarge'));
     }
 
     /**
@@ -461,10 +464,13 @@ class HwhAdmissionController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'hwh_admission_id' => 'required|exists:hwh_admissions,id',
-            'discharge_date' => 'required|date',
-            'discharge_reason' => 'required|string|max:255',
+            'discharge_date' => 'required|date|before_or_equal:today',
+            'discharge_reason' => 'required|string|max:1000',
             'discharge_summary' => 'required|string',
             'follow_up_instructions' => 'nullable|string',
+        ], [
+            'discharge_date.before_or_equal' => 'Discharge date cannot be in the future.',
+            'hwh_admission_id.exists' => 'Invalid patient selected.',
         ]);
 
         if ($validator->fails()) {
@@ -479,6 +485,10 @@ class HwhAdmissionController extends Controller
         try {
             $admission = HWHAdmission::findOrFail($request->hwh_admission_id);
             
+            if ($admission->status !== 'active') {
+                throw new \Exception('This patient is not currently admitted.');
+            }
+
             // Update admission status to discharged
             $admission->update([
                 'discharge_date' => $request->discharge_date,
@@ -490,7 +500,7 @@ class HwhAdmissionController extends Controller
 
             DB::commit();
 
-            return redirect()->route('hwh.discharges.discharged-list')
+            return redirect()->route('hwhadmissions.discharges.discharged-list')
                 ->with('success', 'Patient discharged successfully!');
 
         } catch (\Exception $e) {
@@ -506,11 +516,11 @@ class HwhAdmissionController extends Controller
      */
     public function dischargedList()
     {
-        $dischargedPatients = HWHAdmission::where('status', 'discharged')
+        $dischargedAdmissions = HWHAdmission::where('status', 'discharged')
                             ->orderBy('discharge_date', 'desc')
                             ->paginate(10);
         
-        return view('hwh-discharges.discharged_list', compact('dischargedPatients'));
+        return view('hwh-discharges.discharged-list', compact('dischargedAdmissions'));
     }
 
     /**
@@ -523,6 +533,10 @@ class HwhAdmissionController extends Controller
         try {
             $admission = HWHAdmission::findOrFail($id);
             
+            if ($admission->status !== 'discharged') {
+                throw new \Exception('This patient is not discharged.');
+            }
+
             $admission->update([
                 'discharge_date' => null,
                 'discharge_reason' => null,
@@ -533,7 +547,7 @@ class HwhAdmissionController extends Controller
 
             DB::commit();
 
-            return redirect()->route('hwh.discharges.discharged-list')
+            return redirect()->route('hwhadmissions.discharges.discharged-list')
                 ->with('success', 'Patient readmitted successfully!');
 
         } catch (\Exception $e) {

@@ -24,7 +24,7 @@ class InchargeController extends Controller
         $stats = [
             'total_residents' => Incharge::where('user_district', $user->district)->count(),
             'pending_registration' => Incharge::where('user_district', $user->district)->count(),
-            'pending_discharge' => 0,
+            'pending_discharge' => PendingDischarge::where('user_district', $user->district)->where('status', 'pending')->count(),
             'today_tasks' => Incharge::where('user_district', $user->district)
                             ->whereDate('created_at', today())
                             ->count()
@@ -591,13 +591,87 @@ class InchargeController extends Controller
         return view('incharge.discharge.create'); // ✅ FIXED PATH
     }
 
+    /**
+     * Store discharge data - ✅ FIXED VERSION
+     */
     public function storeDischarge(Request $request)
     {
-        // Implementation for store discharge
-        $user = Auth::user();
+        Log::info('🎯 === STORE DISCHARGE START ===');
         
-        // Add your discharge storage logic here
-        return redirect()->back()->with('success', 'Discharge request submitted successfully');
+        $user = Auth::user();
+        Log::info('👤 User:', [
+            'id' => $user->id, 
+            'name' => $user->name, 
+            'district' => $user->district
+        ]);
+
+        try {
+            // Simple validation
+            $request->validate([
+                'resident_name.*' => 'required',
+                'discharge_date.*' => 'required|date',
+                'cnic.*' => 'required',
+                'admission_date.*' => 'required|date'
+            ]);
+
+            $savedCount = 0;
+            $savedRecords = [];
+
+            foreach($request->resident_name as $index => $name) {
+                if (!empty($name) && !empty($request->discharge_date[$index]) && 
+                    !empty($request->cnic[$index]) && !empty($request->admission_date[$index])) {
+                    
+                    $cleanCnic = preg_replace('/[^0-9]/', '', $request->cnic[$index]);
+                    
+                    // Check duplicate pending discharge
+                    $existing = PendingDischarge::where('cnic', $cleanCnic)
+                                ->where('status', 'pending')
+                                ->first();
+                    if ($existing) {
+                        Log::warning("⚠️ DUPLICATE PENDING DISCHARGE CNIC: {$cleanCnic}");
+                        continue;
+                    }
+
+                    // Create pending discharge record
+                    $pendingDischarge = PendingDischarge::create([
+                        'user_id' => $user->id,
+                        'user_district' => $user->district,
+                        'resident_name' => trim($name),
+                        'discharge_date' => $request->discharge_date[$index],
+                        'cnic' => $cleanCnic,
+                        'admission_date' => $request->admission_date[$index],
+                        'status' => 'pending',
+                    ]);
+
+                    $savedCount++;
+                    $savedRecords[] = [
+                        'name' => $name,
+                        'cnic' => $cleanCnic,
+                        'discharge_date' => $request->discharge_date[$index],
+                        'district' => $user->district
+                    ];
+
+                    Log::info("✅ DISCHARGE SAVED: {$name} - {$cleanCnic} for discharge on {$request->discharge_date[$index]}");
+                }
+            }
+
+            Log::info("🎉 DISCHARGE STORE COMPLETE: {$savedCount} records saved", $savedRecords);
+
+            if ($savedCount > 0) {
+                return redirect()->route('incharge.discharge.create')
+                    ->with('success', $savedCount . ' discharge request(s) submitted successfully! They will appear in DEO pending list.');
+            } else {
+                return redirect()->route('incharge.discharge.create')
+                    ->with('error', 'No discharge requests were saved. Please check for duplicates.')
+                    ->withInput();
+            }
+
+        } catch (\Exception $e) {
+            Log::error('❌ DISCHARGE STORE ERROR: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Error: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     public function pendingDischargeList()
@@ -618,8 +692,9 @@ class InchargeController extends Controller
         $discharge = PendingDischarge::find($id);
         
         if ($discharge) {
+            $dischargeName = $discharge->resident_name;
             $discharge->delete();
-            return redirect()->back()->with('success', 'Discharge request deleted successfully');
+            return redirect()->back()->with('success', "Discharge request for {$dischargeName} deleted successfully");
         }
         
         return redirect()->back()->with('error', 'Discharge request not found');
@@ -627,7 +702,7 @@ class InchargeController extends Controller
 
     public function bulkDeleteDischarge(Request $request)
     {
-        $ids = $request->input('ids');
+        $ids = $request->input('selected_discharges', []);
         
         if (!empty($ids)) {
             $deletedCount = PendingDischarge::whereIn('id', $ids)->delete();
@@ -653,7 +728,7 @@ class InchargeController extends Controller
     }
 
     /**
-     * DEO Pending Discharge List - ✅ ADDED
+     * DEO Pending Discharge List - ✅ FIXED VERSION
      */
     public function deoPendingDischarge()
     {
@@ -664,6 +739,7 @@ class InchargeController extends Controller
 
         // Check if table exists
         if (!Schema::hasTable('pending_discharges')) {
+            Log::warning('❌ pending_discharges table does not exist');
             $pendingDischarges = collect([]);
             return view('deo.pending_discharge', compact('pendingDischarges'));
         }
@@ -672,6 +748,20 @@ class InchargeController extends Controller
         $pendingDischarges = PendingDischarge::where('status', 'pending')
                             ->orderBy('created_at', 'desc')
                             ->get();
+
+        Log::info('📋 DEO PENDING DISCHARGES:', [
+            'total_count' => $pendingDischarges->count(),
+            'data' => $pendingDischarges->map(function($item) {
+                return [
+                    'id' => $item->id,
+                    'name' => $item->resident_name,
+                    'cnic' => $item->cnic,
+                    'discharge_date' => $item->discharge_date,
+                    'district' => $item->user_district,
+                    'user_name' => $item->user->name ?? 'N/A'
+                ];
+            })->toArray()
+        ]);
 
         return view('deo.pending_discharge', compact('pendingDischarges'));
     }

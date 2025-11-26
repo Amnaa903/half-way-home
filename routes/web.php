@@ -27,9 +27,18 @@ Route::prefix('hwhadmissions')->name('hwhadmissions.')->group(function () {
     // ✅ FIXED: SINGLE STORE ROUTE
     Route::post('/', [HWHAdmissionController::class, 'store'])->name('store');
     
+    // ✅ FIXED: DISCHARGE ROUTES MUST COME BEFORE SHOW ROUTE TO AVOID CONFLICT
+    Route::prefix('discharges')->name('discharges.')->group(function () {
+        Route::get('/', [HWHAdmissionController::class, 'dischargeIndex'])->name('index');
+        Route::get('/create/{id}', [HWHAdmissionController::class, 'dischargeCreate'])->name('create');
+        Route::post('/', [HWHAdmissionController::class, 'dischargeStore'])->name('store');
+        Route::get('/discharged-list', [HWHAdmissionController::class, 'dischargedList'])->name('discharged-list');
+        Route::patch('/reverse/{id}', [HWHAdmissionController::class, 'reverseDischarge'])->name('reverse');
+    });
+    
     // List all admissions
     Route::get('/', [HWHAdmissionController::class, 'index'])->name('index');
-    // Show single admission
+    // Show single admission - THIS MUST COME AFTER DISCHARGE ROUTES
     Route::get('/{id}', [HWHAdmissionController::class, 'show'])->name('show');
     // Edit admission form
     Route::get('/{id}/edit', [HWHAdmissionController::class, 'edit'])->name('edit');
@@ -37,15 +46,6 @@ Route::prefix('hwhadmissions')->name('hwhadmissions.')->group(function () {
     Route::put('/{id}', [HWHAdmissionController::class, 'update'])->name('update');
     // Delete admission
     Route::delete('/{id}', [HWHAdmissionController::class, 'destroy'])->name('destroy');
-    
-    // ✅ DISCHARGE SYSTEM ROUTES
-    Route::prefix('discharges')->name('discharges.')->group(function () {
-        Route::get('/', [HWHAdmissionController::class, 'dischargeIndex'])->name('index');
-        Route::get('/create/{id}', [HWHAdmissionController::class, 'dischargeCreate'])->name('create');
-        Route::post('/', [HWHAdmissionController::class, 'dischargeStore'])->name('store');
-        Route::get('/discharged-list', [HWHAdmissionController::class, 'dischargedList'])->name('discharged-list');
-        Route::post('/reverse/{id}', [HWHAdmissionController::class, 'reverseDischarge'])->name('reverse');
-    });
 });
 
 // Authentication Routes
@@ -179,13 +179,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/hwh-admissions', [HWHAdmissionController::class, 'index'])->name('hwh.admissions');
         Route::get('/hwh-admissions/{id}', [HWHAdmissionController::class, 'show'])->name('hwh.admissions.show');
         
-        // ✅ DEO DISCHARGE SYSTEM ACCESS
+        // ✅ FIXED: DEO DISCHARGE SYSTEM ACCESS
         Route::prefix('hwh-discharges')->name('hwh.discharges.')->group(function () {
             Route::get('/', [HWHAdmissionController::class, 'dischargeIndex'])->name('index');
             Route::get('/create/{id}', [HWHAdmissionController::class, 'dischargeCreate'])->name('create');
             Route::post('/', [HWHAdmissionController::class, 'dischargeStore'])->name('store');
             Route::get('/discharged-list', [HWHAdmissionController::class, 'dischargedList'])->name('discharged-list');
-            Route::post('/reverse/{id}', [HWHAdmissionController::class, 'reverseDischarge'])->name('reverse');
+            Route::patch('/reverse/{id}', [HWHAdmissionController::class, 'reverseDischarge'])->name('reverse');
         });
     });
     
@@ -198,7 +198,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/hwh-admissions', [HWHAdmissionController::class, 'index'])->name('hwh.admissions');
         Route::get('/hwh-admissions/{id}', [HWHAdmissionController::class, 'show'])->name('hwh.admissions.show');
         Route::delete('/hwh-admissions/{id}', [HWHAdmissionController::class, 'destroy'])->name('hwh.admissions.destroy');
-        Route::post('/hwhadmissions', [HWHAdmissionFormController::class, 'store'])->name('hwhadmissions.store');
+        
         // Admin Registration Management
         Route::get('/pending-registration', [InchargeController::class, 'deoPendingRegistration'])->name('admin.pending.registration');
         Route::delete('/registration/{id}', [InchargeController::class, 'deoDestroyRegistration'])->name('admin.registration.destroy');
@@ -209,13 +209,13 @@ Route::middleware(['auth'])->group(function () {
         // Admin bulk delete discharges
         Route::post('/discharge/bulk-delete', [InchargeController::class, 'bulkDeleteDischarge'])->name('admin.discharge.bulk-delete');
         
-        // ✅ ADMIN DISCHARGE SYSTEM ACCESS
+        // ✅ FIXED: ADMIN DISCHARGE SYSTEM ACCESS
         Route::prefix('hwh-discharges')->name('hwh.discharges.')->group(function () {
             Route::get('/', [HWHAdmissionController::class, 'dischargeIndex'])->name('index');
             Route::get('/create/{id}', [HWHAdmissionController::class, 'dischargeCreate'])->name('create');
             Route::post('/', [HWHAdmissionController::class, 'dischargeStore'])->name('store');
             Route::get('/discharged-list', [HWHAdmissionController::class, 'dischargedList'])->name('discharged-list');
-            Route::post('/reverse/{id}', [HWHAdmissionController::class, 'reverseDischarge'])->name('reverse');
+            Route::patch('/reverse/{id}', [HWHAdmissionController::class, 'reverseDischarge'])->name('reverse');
         });
     });
 
