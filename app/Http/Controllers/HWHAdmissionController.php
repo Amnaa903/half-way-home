@@ -458,44 +458,69 @@ class HWHAdmissionController extends Controller
     }
 
     /**
-     * Store discharge data
+     * Store discharge data - FIXED VERSION
      */
     public function dischargeStore(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'hwh_admission_id' => 'required|exists:hwh_admissions,id',
-            'discharge_date' => 'required|date|before_or_equal:today',
-            'discharge_reason' => 'required|string|max:1000',
-            'discharge_summary' => 'required|string',
-            'follow_up_instructions' => 'nullable|string',
-        ], [
-            'discharge_date.before_or_equal' => 'Discharge date cannot be in the future.',
-            'hwh_admission_id.exists' => 'Invalid patient selected.',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput()
-                ->with('error', 'Please fix the validation errors.');
-        }
-
-        DB::beginTransaction();
+        \Log::info('🎯 === DISCHARGE FORM SUBMISSION STARTED ===', $request->all());
 
         try {
-            $admission = HWHAdmission::findOrFail($request->hwh_admission_id);
+            // Get admission ID from any possible field name
+            $admissionId = $request->hwh_admission_id ?? $request->admission_id ?? $request->input('admission_id');
             
+            \Log::info('Looking for admission ID:', ['provided_id' => $admissionId]);
+
+            if (!$admissionId) {
+                throw new \Exception('Admission ID is required.');
+            }
+
+            // Find the admission
+            $admission = HWHAdmission::find($admissionId);
+            
+            if (!$admission) {
+                throw new \Exception('Patient record not found.');
+            }
+
+            \Log::info('Found admission', [
+                'id' => $admission->id,
+                'patient_name' => $admission->patient_name,
+                'status' => $admission->status
+            ]);
+
             if ($admission->status !== 'active') {
                 throw new \Exception('This patient is not currently admitted.');
             }
+
+            // Basic validation
+            if (!$request->discharge_date) {
+                throw new \Exception('Discharge date is required.');
+            }
+
+            if (!$request->discharge_reason) {
+                throw new \Exception('Discharge reason is required.');
+            }
+
+            // Check if discharge date is not in future
+            $dischargeDate = Carbon::parse($request->discharge_date);
+            if ($dischargeDate->isFuture()) {
+                throw new \Exception('Discharge date cannot be in the future.');
+            }
+
+            DB::beginTransaction();
 
             // Update admission status to discharged
             $admission->update([
                 'discharge_date' => $request->discharge_date,
                 'discharge_reason' => $request->discharge_reason,
-                'discharge_summary' => $request->discharge_summary,
+                'discharge_summary' => $request->discharge_notes ?? $request->discharge_summary,
                 'follow_up_instructions' => $request->follow_up_instructions,
                 'status' => 'discharged',
+            ]);
+
+            \Log::info('✅ Admission discharged successfully', [
+                'admission_id' => $admission->id,
+                'patient_name' => $admission->patient_name,
+                'discharge_date' => $request->discharge_date
             ]);
 
             DB::commit();
@@ -505,6 +530,7 @@ class HWHAdmissionController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('❌ Discharge failed', ['error' => $e->getMessage()]);
             return back()
                 ->with('error', 'Failed to discharge patient: ' . $e->getMessage())
                 ->withInput();
